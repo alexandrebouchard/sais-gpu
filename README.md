@@ -4,7 +4,7 @@
 ### Setup SSH
 
 1. Setup a password manager to avoid having to type your CWL password every time
-1. Make sure Sockeye connection sharing is setup. See [relevant section of Sockeye doc](https://confluence.it.ubc.ca/display/UARC/SSH+Connection+Sharing). The key info is that you should have the following in your laptop's `~/.ssh/config` file (`~` mean home directory):
+2. Make sure Sockeye connection sharing is setup. See [relevant section of Sockeye doc](https://confluence.it.ubc.ca/display/UARC/SSH+Connection+Sharing). The key info is that you should have the following in your laptop's `~/.ssh/config` file (`~` mean home directory):
 ```
 Host s
     HostName sockeye.arc.ubc.ca
@@ -12,8 +12,8 @@ Host s
     ControlMaster auto
     ControlPath ~/.ssh/ssh_mux_%h_%p_%r
 ```
-2. Open a terminal window and login with `ssh s`, do the 2-factor auth. 
-3. Put that terminal aside and don't touch it. As long as it is open, other terminals can be opened without the 2 step auth (required for VS Code remote to work).
+3. Open the UBC VPN and a terminal window and login with `ssh s`, do the 2-factor auth. 
+4. Put that terminal aside and don't touch it. As long as it is open, other terminals can be opened without the 2 step auth (required for VS Code remote to work).
 
 
 ### Setup remote VS Code
