@@ -26,10 +26,10 @@ Host s
 ### Basic Sockeye setup
 
 1. Create the directory `/scratch/st-alexbou-1/[your username]`
-2. Download julia and install in your home dir, e.g. in `/home/[user]/bin/julia-1.xx.x`
+2. Download julia and install in your home dir, e.g. in `/home/[your username]/bin/julia-1.xx.x`
 3. Edit `~/.bash_profile` to add:
 ```
-export PATH=$PATH:/home/alexbou/bin/julia-1.10.2/bin
+export PATH=$PATH:/home/[your username]/bin/julia-1.10.2/bin
 
 export JULIA_PKG_DEVDIR=/scratch/st-alexbou-1/[your username]/
 export JULIA_DEPOT_PATH=/scratch/st-alexbou-1/[your username]/depot
@@ -52,10 +52,10 @@ using Revise
 ### Setup this repo
 
 1. Clone this repo, i.e. `cd /scratch/st-alexbou-1/[your username]`, `git clone https://github.com/alexandrebouchard/gpufun.git`, cd in it. 
-2. Open two terminal in VS code:
+2. Open two terminals in VS code:
     - One will be in the head node. Use for anything that needs network access (package install in particular). Open julia with `j`
     - One will be a GPU node that does not have internet access. In that terminal, type `ginteract` to start the GPU node, then `j`.
-3. In the head node terminal, setup the repo with `] instantiate`
+3. In the head node terminal, setup the Julia dependencies with `] instantiate`
 
 
 ### Test your setup
