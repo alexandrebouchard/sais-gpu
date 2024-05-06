@@ -1,0 +1,13 @@
+julia> include("nvidia.jl")
+On GPU (CUDA)
+  211.143 μs (110 allocations: 3.56 KiB)
+On CPU
+  203.857 ms (0 allocations: 0 bytes)
+
+
+
+julia> include("apple.jl")
+On GPU (Metal)
+  1.674 ms (847 allocations: 23.57 KiB)
+On CPU
+  96.443 ms (0 allocations: 0 bytes)
