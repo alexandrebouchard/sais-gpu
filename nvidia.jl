@@ -12,7 +12,7 @@ end
 @btime add_cuda!(gpu_vector)
 
 println("On CPU")
-cpu_vector = ones(N) 
+cpu_vector = ones(Float32, N) 
 function add_cpu!(x)
     mapreduce(exp, +, x)
     return
