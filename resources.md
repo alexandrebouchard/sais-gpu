@@ -1,0 +1,8 @@
+- [CUDA.jl](https://cuda.juliagpu.org/stable/tutorials/introduction/) - for Nvidia (most popular arch, Sockeye)
+- [How CUDA.jl works](https://robertcunningham.xyz/how-does-cuda-jl-work/) - pointers to other useful packages
+- [KernelAbstractions.jl](https://juliagpu.github.io/KernelAbstractions.jl/stable/quickstart/) - syntax seems nicer, more portable
+- [Lecture slides on GPU memory organization](https://www.ce.jhu.edu/dalrymple/classes/602/Class13.pdf)
+- [Metal.jl](https://metal.juliagpu.org/stable/usage/overview/) - for GPUs on apple machines
+- [visualization for threadgroups](https://developer.apple.com/documentation/metal/compute_passes/creating_threads_and_threadgroups?language=objc)
+- [Higher level library for stencils](https://github.com/omlins/ParallelStencil.jl?tab=readme-ov-file)
+- [GPUArrays.jl](https://juliagpu.github.io/GPUArrays.jl/stable/) - like AbstractArray but for GPUs
