@@ -7,15 +7,15 @@ using Random
 using Base: rand
 using Random: Random, AbstractRNG, RandomDevice, rng_native_52, SamplerUnion
 
+using Adapt 
 
-struct SplitRandom{T} <: AbstractRNG
-    task_index::Int 
+struct SplitRandomArray{T}
     array::T 
-end
+end 
+Adapt.@adapt_structure SplitRandomArray
 
-splittable(seed::Int) = SplittableRandom(seed) 
-splittable(rng::SplittableRandom) = rng
-function SplitRandom(size::Int; gpu::Bool = false, seed = 1) 
+# Pass this to the kernel
+function SplitRandomArray(size::Int; gpu::Bool = false, seed = 1) 
     base_rng = splittable(seed)
     rng_array = [SplittableRandoms.split(base_rng) for _ in 1:size] 
     storage = Array{UInt64}(undef, 2, size)
@@ -23,12 +23,25 @@ function SplitRandom(size::Int; gpu::Bool = false, seed = 1)
         storage[1, i] = rng_array[i].seed 
         storage[2, i] = rng_array[i].gamma
     end 
-    final_storage = gpu ? cu(storage) : storage
-    result = [SplitRandom(i, final_storage) for i in 1:size] 
-    return gpu ? cu(result) : result 
+    return SplitRandomArray(gpu ? cu(storage) : storage)
 end
 
-next_seed!(sr::SplitRandom) = sr.array[1, sr.task_index] += sr.array[2, sr.task_index]
+# Create those as stack-allocated
+struct SplitRandom{T} <: AbstractRNG
+    # view into the array
+    # entry 1 is SplittableRandom.seed
+    # entry 2 is SplittableRandom.gamma
+    view::T 
+end
+SplitRandom(sra::SplitRandomArray, task::Int) = SplitRandom(@view sra.array[:, task])
+
+
+# support functions
+
+splittable(seed::Int) = SplittableRandom(seed) 
+splittable(rng::SplittableRandom) = rng
+
+next_seed!(sr::SplitRandom) = sr.view[1] += sr.view[2]
 
 Base.rand(sr::SplitRandom{A}, ::Type{UInt64}) where {A} = SplittableRandoms.mix64(next_seed!(sr))
 Random.rng_native_52(::SplitRandom{A}) where {A} = UInt64
