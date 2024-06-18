@@ -16,15 +16,19 @@ A = ones(N, N)
 @btime begin 
     backend = get_backend(A)
     test(backend)(A, ndrange=size(A))
-    synchronize(dev)
+    synchronize(backend)
 end
 
 
 # using CUDA: CuArray
-using CUDA
-A = CuArray(ones(N, N))
+# using CUDA
+# A = CuArray(ones(N, N))
+
+using Metal 
+A = Metal.ones(N, N)
+
 @btime begin 
     backend = get_backend(A)
     test(backend)(A, ndrange=size(A))
-    synchronize(dev)
+    synchronize(backend)
 end

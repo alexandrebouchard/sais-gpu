@@ -2,7 +2,7 @@
 # This restriction makes it suitable to GPUs.
 
 using SplittableRandoms
-using CUDA 
+using KernelAbstractions 
 using Random
 using Base: rand
 using Random: Random, AbstractRNG, RandomDevice, rng_native_52, SamplerUnion
@@ -14,8 +14,8 @@ struct SplitRandomArray{T}
 end 
 Adapt.@adapt_structure SplitRandomArray
 
-# Pass this to the kernel
-function SplitRandomArray(size::Int; gpu::Bool = false, seed = 1) 
+# Pass the array to the kernel
+function SplitRandomArray(size::Int; backend::Backend = CPU(), seed = 1) 
     base_rng = splittable(seed)
     rng_array = [SplittableRandoms.split(base_rng) for _ in 1:size] 
     storage = Array{UInt64}(undef, 2, size)
@@ -23,27 +23,32 @@ function SplitRandomArray(size::Int; gpu::Bool = false, seed = 1)
         storage[1, i] = rng_array[i].seed 
         storage[2, i] = rng_array[i].gamma
     end 
-    return SplitRandomArray(gpu ? cu(storage) : storage)
+    result = KernelAbstractions.zeros(backend, UInt64, 2, size) 
+    result .= storage
+    return SplitRandomArray(result)
 end
 
-# Create those as stack-allocated
-struct SplitRandom{T} <: AbstractRNG
-    # view into the array
-    # entry 1 is SplittableRandom.seed
-    # entry 2 is SplittableRandom.gamma
-    view::T 
-end
-SplitRandom(sra::SplitRandomArray, task::Int) = SplitRandom(@view sra.array[:, task])
-
+Base.getindex(sra::SplitRandomArray, index::Int) = SplitRandom(index, sra.array)
 
 # support functions
+
+# essentially a view into an array 
+struct SplitRandom{T} <: AbstractRNG
+    task::Int
+    # entry 1 is SplittableRandom.seed
+    # entry 2 is SplittableRandom.gamma
+    array::T 
+end
 
 splittable(seed::Int) = SplittableRandom(seed) 
 splittable(rng::SplittableRandom) = rng
 
-next_seed!(sr::SplitRandom) = sr.view[1] += sr.view[2]
+next_seed!(sr::SplitRandom) = sr.array[1, sr.task] += sr.array[2, sr.task]
 
 Base.rand(sr::SplitRandom{A}, ::Type{UInt64}) where {A} = SplittableRandoms.mix64(next_seed!(sr))
+# GPU friendly box-muller transform
+Base.randn(sr::SplitRandom{A}, ::Type{Float32}) where {A} = sqrt(-2log(rand(sr, Float32))) * cos(rand(sr, Float32) * 2f0*pi)
+
 Random.rng_native_52(::SplitRandom{A}) where {A} = UInt64
 
 @inline function Base.rand(

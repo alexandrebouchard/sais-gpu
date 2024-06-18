@@ -1,24 +1,27 @@
+#using CUDA
+
 include("SplitRandom.jl") 
-include("responsibilities.jl")
 
-
-
-function test!(rngs, out) 
-    for i in responsibilities(out) 
-        rng = SplitRandom(rngs, i)
-        out[i] = randn(rng)
-    end
+@kernel function test!(rngs, out) 
+    i = @index(Global)
+    rng = rngs[i]
+    out[i] = randn(rng, Float32)
 end
 
-N = 2
-gpu = true
-rngs = SplitRandomArray(N; gpu)
-out = gpu ? cu(ones(N)) : ones(N)
 
-if gpu
-    @cuda threads=N test!(rngs, out)
-else
-    test!(rngs, out)
+N = 10
+backend = 
+    CPU()
+    #CUDABackend()
+    #MetalBackend()
+
+rngs = SplitRandomArray(N; backend)
+out = KernelAbstractions.zeros(backend, Float32, N)
+
+using BenchmarkTools
+@btime begin 
+    test!(backend)(rngs, out, ndrange=size(out))
+    KernelAbstractions.synchronize(backend)
 end
 
 @show out
