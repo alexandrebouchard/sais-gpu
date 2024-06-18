@@ -16,7 +16,7 @@ A = ones(N, N)
 @btime begin 
     backend = get_backend(A)
     test(backend)(A, ndrange=size(A))
-    synchronize(dev)
+    synchronize(backend)
 end
 
 
@@ -26,5 +26,5 @@ A = CuArray(ones(N, N))
 @btime begin 
     backend = get_backend(A)
     test(backend)(A, ndrange=size(A))
-    synchronize(dev)
+    synchronize(backend)
 end
