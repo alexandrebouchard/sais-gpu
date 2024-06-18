@@ -6,7 +6,7 @@ using BenchmarkTools
 println("On GPU (Metal)")
 gpu_vector = Metal.ones(N)
 function add_metal!(x)
-    Metal.@sync mapreduce(exp, +, x)
+    Metal.@sync sum(exp, x)
     return
 end
 @btime add_metal!(gpu_vector)
@@ -14,7 +14,7 @@ end
 println("On CPU")
 cpu_vector = ones(Float32, N) 
 function add_cpu!(x)
-    mapreduce(exp, +, x)
+    sum(exp, x)
     return
 end
 @btime add_cpu!(cpu_vector)
