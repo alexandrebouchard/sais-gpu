@@ -45,7 +45,7 @@ function ais(path, T::Int, N::Int; backend::Backend = CPU(), seed::Int = 1, elt_
     # parallel propagation 
     betas_ = range(0.0, stop=1.0, length=T)
     betas = KernelAbstractions.zeros(backend, E, T) 
-    copyto!(betas, betas_)
+    betas .= betas_
 
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, D, N) 
