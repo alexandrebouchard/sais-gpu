@@ -22,9 +22,9 @@ end
 
 dimensionality(path::NormalPath) = path.dim
 
-N = 10
-T = 10
+N = 50000
+T = 10000
 for backend in [CPU(), CUDABackend()]
     @show backend 
-    @show ais(NormalPath(2), T, N; backend)
+    @time ais(NormalPath(2), T, N; backend)
 end
