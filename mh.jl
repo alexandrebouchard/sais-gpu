@@ -7,7 +7,7 @@ function mh!(rng, path,
     # propose
     for d in eachindex(state) 
         buffer[d] = state[d]
-        state[d] = randn(rng, E)
+        state[d] += randn(rng, E)
     end
 
     log_path_proposed = log_density(path, beta, state) 
