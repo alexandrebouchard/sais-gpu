@@ -12,7 +12,7 @@ function iid_sample!(rng, path::NormalPath, state::AbstractVector{E}) where {E}
     end
 end
 
-function log_density(path::NormalPath, beta::T, state::AbstractVector{E}) where {E}
+function log_density(path::NormalPath, beta::E, state::AbstractVector{E}) where {E}
     sum = zero(E)
     for d in eachindex(state) 
         sum += -(beta - state[d])^2 / 2

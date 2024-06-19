@@ -43,13 +43,13 @@ function ais(path, T::Int, N::Int; backend::Backend = CPU(), seed::Int = 1, elt_
     KernelAbstractions.synchronize(backend)
 
     # parallel propagation 
-    betas_ = range(0.0, stop=1.0, length=M)
+    betas_ = range(0.0, stop=1.0, length=T)
     betas = KernelAbstractions.zeros(backend, E, T) 
     copyto!(betas, betas_)
 
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, D, N) 
-    propagate_and_weigh_(backend)(rngs, path, states, buffers, log_weights, betas)
+    propagate_and_weigh_(backend)(rngs, path, states, buffers, log_weights, betas, ndrange=N)
     KernelAbstractions.synchronize(backend)
     return states, log_weights 
 end

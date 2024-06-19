@@ -1,13 +1,13 @@
 function mh!(rng, path, 
         state::AbstractVector{E}, 
         buffer::AbstractVector{E}, 
-        beta::T) where {E}
+        beta::E) where {E <: AbstractFloat}
     log_path_before = log_density(path, beta, state)
 
     # propose
     for d in eachindex(state) 
         buffer[d] = state[d]
-        state[d] = randn(rng, T)
+        state[d] = randn(rng, E)
     end
 
     log_path_proposed = log_density(path, beta, state) 
