@@ -30,7 +30,10 @@ end
 
 Base.getindex(sra::SplitRandomArray, index::Int) = SplitRandom(index, sra.array)
 
+
 # support functions
+
+Base.length(sra::SplitRandomArray) = size(sra.array)[2]
 
 # essentially a view into an array 
 struct SplitRandom{T} <: AbstractRNG
@@ -57,4 +60,3 @@ Random.rng_native_52(::SplitRandom{A}) where {A} = UInt64
     ) where {A}
     rand(rng, UInt64) % T[]
 end
-
