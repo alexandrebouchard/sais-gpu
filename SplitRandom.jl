@@ -18,13 +18,13 @@ Adapt.@adapt_structure SplitRandomArray
 function SplitRandomArray(size::Int; backend::Backend = CPU(), seed = 1) 
     base_rng = splittable(seed)
     rng_array = [SplittableRandoms.split(base_rng) for _ in 1:size] 
-    storage = Array{UInt64}(undef, 2, size)
+    init = Array{UInt64}(undef, 2, size)
     for i in 1:size 
-        storage[1, i] = rng_array[i].seed 
-        storage[2, i] = rng_array[i].gamma
+        init[1, i] = rng_array[i].seed 
+        init[2, i] = rng_array[i].gamma
     end 
     result = KernelAbstractions.zeros(backend, UInt64, 2, size) 
-    result .= storage
+    copyto!(result, init)
     return SplitRandomArray(result)
 end
 
