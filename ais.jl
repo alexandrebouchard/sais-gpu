@@ -28,7 +28,7 @@ end
         state = @view states[:, i]
         buffer = @view buffers[:, i]
         log_weights[i] += log_density(path, betas[t], state) - log_density(path, betas[t-1], state)
-        mh!(rng, path, state, buffer, beta[t]) 
+        mh!(rng, path, state, buffer, betas[t]) 
     end
 end 
 

@@ -22,6 +22,6 @@ end
 
 dimensionality(path::NormalPath) = path.dim
 
-backend = CPU()
+backend = CUDABackend()
 
 ais(NormalPath(2), 3, 5; backend)
