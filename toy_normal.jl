@@ -1,6 +1,5 @@
 include("ais.jl")
 
-
 struct NormalPath
     dim::Int 
 end
@@ -22,11 +21,16 @@ end
 
 dimensionality(path::NormalPath) = path.dim
 
-N = 1000
+N = 100
 T = 500000
-for backend in [CPU(), CUDABackend()]
+
+for backend in [CPU()]
+    a = AIS(; backend)
     @show backend 
-    @time ais(NormalPath(2), T, N; backend)
+    for i in 1:3
+        @show i 
+        ais(a, NormalPath(2); N, T, backend)
+    end
 end
 
 #=

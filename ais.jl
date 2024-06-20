@@ -32,15 +32,22 @@ end
     end
 end 
 
-function ais(path, T::Int, N::Int; backend::Backend = CPU(), seed::Int = 1, elt_type::Type{E} = Float32) where {E}
+struct AIS{X, Y}
+    iid_kernel::X 
+    prop_kernel::Y
+end
+AIS(; backend::Backend = CPU()) = AIS(iid_(backend), propagate_and_weigh_(backend))
 
+function ais(a::AIS, path; T::Int, N::Int, backend::Backend = CPU(), seed::Int = 1, elt_type::Type{E} = Float32) where {E}
     rngs = SplitRandomArray(N; backend, seed) 
     D = dimensionality(path)
     states = KernelAbstractions.zeros(backend, E, D, N)
 
     # initialization: iid sampling from reference
-    iid_(backend)(rngs, path, states, ndrange=N) 
-    KernelAbstractions.synchronize(backend)
+    @time begin
+        a.iid_kernel(rngs, path, states, ndrange=N) 
+        KernelAbstractions.synchronize(backend)
+    end
 
     # parallel propagation 
     betas_ = range(0.0, stop=1.0, length=T)
@@ -49,7 +56,10 @@ function ais(path, T::Int, N::Int; backend::Backend = CPU(), seed::Int = 1, elt_
 
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, D, N) 
-    propagate_and_weigh_(backend)(rngs, path, states, buffers, log_weights, betas, ndrange=N)
-    KernelAbstractions.synchronize(backend)
+    @time begin
+        a.prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange=N)
+        KernelAbstractions.synchronize(backend)
+    end 
+
     return states, log_weights 
 end
