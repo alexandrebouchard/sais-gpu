@@ -1,37 +1,45 @@
 include("ais.jl")
 
+# A path between N(0, 1) and N(0, sd = 2)
 struct NormalPath
     dim::Int 
 end
 
 # reference is standard normal
-function iid_sample!(rng, path::NormalPath, state::AbstractVector{E}) where {E}
+function iid_sample!(rng, ::NormalPath, state::AbstractVector{E}) where {E}
     for d in eachindex(state)  
         state[d] = randn(rng, E)
     end
 end
 
-function log_density(path::NormalPath, beta::E, state::AbstractVector{E}) where {E}
+function log_density(::NormalPath, beta::E, state::AbstractVector{E}) where {E}
     sum = zero(E)
+    scaling = inv(1 + beta) / 4
     for d in eachindex(state) 
-        sum += -(beta - state[d])^2 / 2
+        sum += -(scaling * (beta - state[d]))^2
     end
     return sum
 end
 
 dimensionality(path::NormalPath) = path.dim
 
-N = 100
-T = 500000
+#=
 
-for backend in [CPU()]
+
+N = 5000
+T = 5000
+
+for backend in [CPU(), CUDABackend()]
     a = AIS(; backend)
     @show backend 
-    for i in 1:3
+    for i in 1:2
         @show i 
-        ais(a, NormalPath(2); N, T, backend)
+        ais(a, NormalPath(1); N, T, backend)
     end
 end
+
+=#
+
 
 #=
 Proof of concept timing:

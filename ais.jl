@@ -1,6 +1,7 @@
 using CUDA
 include("SplitRandom.jl") 
 include("mh.jl")
+include("Particles.jl")
 
 # D = dim 
 # N = num particles 
@@ -61,5 +62,6 @@ function ais(a::AIS, path; T::Int, N::Int, backend::Backend = CPU(), seed::Int =
         KernelAbstractions.synchronize(backend)
     end 
 
-    return states, log_weights 
+    return Particles(states, vec(log_weights))
 end
+
