@@ -20,7 +20,7 @@ end
         states,         # D x N
         buffers,        # D x N
         log_weights,    # N 
-        betas           # T
+        @Const(betas)           # T
         )   
     i = @index(Global)  # ∈ 1 .. N 
     rng = rngs[i]
@@ -33,35 +33,28 @@ end
     end
 end 
 
-struct AIS{X, Y}
-    iid_kernel::X 
-    prop_kernel::Y
-end
-AIS(; backend::Backend = CPU()) = AIS(iid_(backend), propagate_and_weigh_(backend))
-
-function ais(a::AIS, path; T::Int, N::Int, backend::Backend = CPU(), seed::Int = 1, elt_type::Type{E} = Float32) where {E}
+function ais(path; T::Int, N::Int, backend::Backend = CPU(), seed::Int = 1, elt_type::Type{E} = Float32) where {E}
     rngs = SplitRandomArray(N; backend, seed) 
     D = dimensionality(path)
     states = KernelAbstractions.zeros(backend, E, D, N)
 
     # initialization: iid sampling from reference
+    iid_kernel = iid_(backend)
     @time begin
-        a.iid_kernel(rngs, path, states, ndrange=N) 
+        iid_kernel(rngs, path, states, ndrange=N) 
         KernelAbstractions.synchronize(backend)
     end
 
     # parallel propagation 
-    betas_ = range(0.0, stop=1.0, length=T)
-    betas = KernelAbstractions.zeros(backend, E, T) 
-    betas .= betas_
-
+    betas = copy_to_device(range(zero(E), stop=one(E), length=T), backend)
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
-    log_weights = KernelAbstractions.zeros(backend, E, D, N) 
+    log_weights = KernelAbstractions.zeros(backend, E, N) 
+    prop_kernel = propagate_and_weigh_(backend)
     @time begin
-        a.prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange=N)
+        prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange=N)
         KernelAbstractions.synchronize(backend)
     end 
 
-    return Particles(states, vec(log_weights))
+    return Particles(states, log_weights)
 end
 

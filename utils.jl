@@ -27,3 +27,17 @@ function normalize!(weights)
     return s
 end
 
+# create a copy to CPU of an arbitrary array
+copy_to_cpu(array) = Array(array)
+
+ensure_to_cpu(array::Array) = array 
+ensure_to_cpu(array) = copy_to_cpu(array)
+
+
+# create a copy to device of an arbitrary array
+function copy_to_device(array::AbstractArray{E, N}, backend) where {E, N}
+    result = KernelAbstractions.zeros(backend, E, size(array)) 
+    result .= array 
+    return result
+end
+

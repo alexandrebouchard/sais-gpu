@@ -14,9 +14,9 @@ end
 
 function log_density(::NormalPath, beta::E, state::AbstractVector{E}) where {E}
     sum = zero(E)
-    scaling = inv(1 + beta) / 4
+    scaling = inv(1 + beta)
     for d in eachindex(state) 
-        sum += -(scaling * (beta - state[d]))^2
+        sum += -(scaling * (beta - state[d]))^2 / 2
     end
     return sum
 end
