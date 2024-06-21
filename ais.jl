@@ -7,7 +7,7 @@ include("Particles.jl")
 # N = num particles 
 # T = num annealing params
 
-@kernel function iid_(rngs, path, 
+@kernel function iid_(rngs, @Const(path), 
         states          # D x N
         ) 
     i = @index(Global)  # ∈ 1 .. N 
@@ -20,7 +20,7 @@ end
         states,         # D x N
         buffers,        # D x N
         log_weights,    # N 
-        @Const(betas)           # T
+        @Const(betas)   # T
         )   
     i = @index(Global)  # ∈ 1 .. N 
     rng = rngs[i]
