@@ -1,8 +1,11 @@
 [deps]
 Adapt = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
+AlgebraOfGraphics = "cbdf2221-f076-402e-a563-3d30da359d67"
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
 Metal = "dde4c033-4e86-420c-a63e-0dd931031962"
 Pigeons = "0eb8d820-af6a-4919-95ae-11206f830c31"

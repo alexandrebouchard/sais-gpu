@@ -16,7 +16,7 @@ include("Particles.jl")
     iid_sample!(rng, path, state)
 end
 
-@kernel function propagate_and_weigh_(rngs, path, 
+@kernel function propagate_and_weigh_(rngs, @Const(path), 
         states,         # D x N
         buffers,        # D x N
         log_weights,    # N 
@@ -32,8 +32,6 @@ end
         mh!(rng, path, state, buffer, betas[t]) 
     end
 end 
-
-
 
 function ais(path; 
         T::Int, 
@@ -65,7 +63,7 @@ function ais(path;
         prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange = N)
         KernelAbstractions.synchronize(backend)
     end 
-    println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
+    # println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
 
     return Particles(states, log_weights), timing
 end
