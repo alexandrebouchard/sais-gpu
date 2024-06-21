@@ -38,7 +38,7 @@ function ais(path;
         N::Int, 
         backend::Backend = CPU(), 
         seed::Int = 1,
-        n_workers = nothing, 
+        multi_threaded::Bool = true,
         elt_type::Type{E} = Float32
         ) where {E}
     rngs = SplitRandomArray(N; backend, seed) 
@@ -46,15 +46,15 @@ function ais(path;
     states = KernelAbstractions.zeros(backend, E, D, N)
 
     # initialization: iid sampling from reference
-    iid_kernel = isnothing(n_workers) ? iid_(backend) : iid_(backend, n_workers)
-    iid_kernel(rngs, path, states, ndrange = N) 
+    tasks_per_workgroup = multi_threaded ? 1 : N
+    iid_(backend, tasks_per_workgroup)(rngs, path, states, ndrange = N) 
     KernelAbstractions.synchronize(backend)
 
     # parallel propagation 
     betas = copy_to_device(range(zero(E), stop=one(E), length=T), backend)
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
-    log_weights = KernelAbstractions.zeros(backend, E, N) 
-    prop_kernel = isnothing(n_workers) ? propagate_and_weigh_(backend) : propagate_and_weigh_(backend, n_workers)
+    log_weights = KernelAbstractions.zeros(backend, E, N)
+    prop_kernel = propagate_and_weigh_(backend, tasks_per_workgroup)
     timing = @timed begin
         prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange = N)
         KernelAbstractions.synchronize(backend)
