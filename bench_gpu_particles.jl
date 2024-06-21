@@ -16,7 +16,7 @@ function run_bench()
         # warm-up - do not include this one in results
         ais(target; T, N=10, backend) 
         # measure
-        for N in map(i -> 2^i, 0:15)
+        for N in map(i -> 2^i, 0:20)
             _, t = ais(target; T, N, backend) 
             push!(result, (; N, backend = backend_label(backend), time = t.time))
         end
