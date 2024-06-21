@@ -33,28 +33,34 @@ end
     end
 end 
 
-function ais(path; T::Int, N::Int, backend::Backend = CPU(), seed::Int = 1, elt_type::Type{E} = Float32) where {E}
+function ais(path; 
+        T::Int, 
+        N::Int, 
+        backend::Backend = CPU(), 
+        seed::Int = 1,
+        n_workers = nothing, 
+        elt_type::Type{E} = Float32
+        ) where {E}
     rngs = SplitRandomArray(N; backend, seed) 
     D = dimensionality(path)
     states = KernelAbstractions.zeros(backend, E, D, N)
 
     # initialization: iid sampling from reference
-    iid_kernel = iid_(backend)
-    @time begin
-        iid_kernel(rngs, path, states, ndrange=N) 
-        KernelAbstractions.synchronize(backend)
-    end
+    iid_kernel = isnothing(n_workers) ? iid_(backend) : iid_(backend, n_workers)
+    iid_kernel(rngs, path, states, ndrange = N) 
+    KernelAbstractions.synchronize(backend)
 
     # parallel propagation 
     betas = copy_to_device(range(zero(E), stop=one(E), length=T), backend)
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, N) 
-    prop_kernel = propagate_and_weigh_(backend)
-    @time begin
-        prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange=N)
+    prop_kernel = isnothing(n_workers) ? propagate_and_weigh_(backend) : propagate_and_weigh_(backend, n_workers)
+    timing = @timed begin
+        prop_kernel(rngs, path, states, buffers, log_weights, betas, ndrange = N)
         KernelAbstractions.synchronize(backend)
     end 
+    println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
 
-    return Particles(states, log_weights)
+    return Particles(states, log_weights), timing
 end
 
