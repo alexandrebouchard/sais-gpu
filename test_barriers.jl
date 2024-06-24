@@ -2,7 +2,7 @@ include("barriers.jl")
 include("ais.jl")
 using CUDA 
 using KernelAbstractions 
-
+using Pigeons
 
 T = 5
 N = 10
@@ -47,5 +47,14 @@ for exponent in [1, 2]
     @assert cpu ≈ gpu
 end
 
+function test_normal_barrier_runs()
+    T = 1000
+    N = 1000
+    a = ais(NormalPath(2); T, N, compute_increments = true, elt_type = Float64)
+    betas = range(0, 1, length=T) 
+    intensities = intensity(a.log_increments)
+    @show intensities
+    return Pigeons.communication_barriers(intensities, collect(betas))
+end
 
-nothing
+test_normal_barrier_runs()

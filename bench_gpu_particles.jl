@@ -16,10 +16,10 @@ function run_bench()
     for compute_increments in [true, false]
         for backend in [CUDABackend(), CPU()]
             # warm-up - do not include this one in results
-            ais(target; T, N=10, backend, compute_increments) 
+            ais(target; T, N=10, backend, compute_increments, explorer = RWMH(n_passes = 1)) 
             # measure
             for N in map(i -> 2^i, backend isa CPU ? (0:15) : (0:20))
-                t = ais(target; T, N, backend, compute_increments).timing
+                t = ais(target; T, N, backend, compute_increments, explorer = RWMH(n_passes = 1)).timing
                 push!(result, (; N, backend = backend_label(backend), time = t.time, compute_increments))
             end
         end
@@ -27,7 +27,7 @@ function run_bench()
     return result
 end
 backend_label(::CPU) = :CPU 
-backend_label(_) = :GPU
+backend_label(_)     = :GPU
 
 plot(result) =
     data(result) * 

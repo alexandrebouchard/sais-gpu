@@ -1,3 +1,13 @@
+@kwdef struct RWMH 
+    n_passes::Int = 3
+end
+
+explore!(rng, explorer::RWMH, path, state, buffer, beta) = 
+    for i in 1:explorer.n_passes
+        mh!(rng, path, state, buffer, beta) 
+    end
+
+
 function mh!(rng, path, 
         state::AbstractVector{E}, 
         buffer::AbstractVector{E}, 

@@ -1,13 +1,10 @@
 include("utils.jl")
 
-# idea: first write naive version 
-
-# then matrix-based version 
-
-# finally test on GPUs afterwards
-
-# input for all these is the matrix of incremental weights 
-
+function intensity(log_increments) 
+    g1 = compute_log_g(log_increments, 1)
+    g2 = compute_log_g(log_increments, 2)
+    return g2 .- 2 .* g1 
+end
 
 function compute_log_g(log_increments, exponent::Int) 
     T, _ = size(log_increments) 
@@ -21,6 +18,6 @@ function compute_log_g(log_increments, exponent::Int)
     weight_log_norms = log_sum_exp(log_weights, dims = 2)
     result .= result .- @view(weight_log_norms[1:(T-1), :])
 
-    return result
+    return vec(result)
 end
 

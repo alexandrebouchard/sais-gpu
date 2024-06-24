@@ -1,5 +1,3 @@
-include("ais.jl")
-
 # A path between N(0, 1) and N(0, sd = 2)
 struct NormalPath
     dim::Int 
