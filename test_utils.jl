@@ -2,8 +2,8 @@ include("utils.jl")
 
 using Random 
 
-function test_vector() 
-    rng = MersenneTwister(1)
+function test_vector(seed = 1) 
+    rng = MersenneTwister(seed)
     return rand(rng, Float32, 100)
 end
 
@@ -35,3 +35,19 @@ function test_naive()
 end
 test_naive()
 
+function test_vectorized() 
+    T = 2
+    N = 100
+    matrix = zeros(T, N)
+    matrix[1, :] .= test_vector(1)
+    matrix[2, :] .= test_vector(2) 
+
+    log_norms = log_sum_exp(matrix, dims = 2) 
+
+    w1 = test_vector(1) 
+    w2 = test_vector(2)
+
+    @assert log_norms[1] ≈ exp_normalize!(w1)
+    @assert log_norms[2] ≈ exp_normalize!(w2)
+end
+test_vectorized()

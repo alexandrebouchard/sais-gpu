@@ -27,6 +27,13 @@ function normalize!(weights)
     return s
 end
 
+# vectorized log_sum_exp
+function log_sum_exp(log_weights; dims...) 
+    m = maximum(log_weights; dims...)
+    m .= m .+ log.(sum(exp.(log_weights .- m); dims...))
+    return m
+end
+
 # create a copy to CPU of an arbitrary array
 copy_to_cpu(array) = Array(array)
 
