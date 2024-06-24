@@ -1,12 +1,13 @@
 using SplittableRandoms 
 include("barriers.jl")
+using CUDA 
+using KernelAbstractions 
 
-rng = SplittableRandom(1) 
 
-T = 2 
-N = 1
+T = 5
+N = 10
 
-log_increments = rand(rng, T, N) 
+
 
 # TODO: check last cumsum is the same as the weights?
 
@@ -26,14 +27,22 @@ function naive_log_g(log_increments, t, exponent::Int) # t ∈ {2, ..., T}
     return log(s)
 end
 
-exponent = 2
+function test_barriers(backend, exponent) 
+    rng = SplittableRandom(1)
+    array = rand(rng, Float32, T, N)
+    log_increments = copy_to_device(array, backend)
+    naive = [naive_log_g(array, t, exponent) for t in 2:T]
+    tested = ensure_to_cpu(compute_log_g(log_increments, exponent))
+    @assert vec(naive) ≈ vec(tested)
+    @assert eltype(tested) == Float32
+    return tested
+end
 
-@show naive_log_g(log_increments, 2, exponent)
-
-
-@show tested = compute_log_g(log_increments, exponent)
-
-
+for exponent in [1, 2]
+    cpu = test_barriers(CPU(), exponent)
+    gpu = test_barriers(CUDABackend(), exponent) 
+    @assert cpu ≈ gpu
+end
 
 
 nothing
