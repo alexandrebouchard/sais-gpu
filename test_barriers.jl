@@ -53,8 +53,9 @@ function test_normal_barrier_runs()
     a = ais(NormalPath(2); T, N, compute_increments = true, elt_type = Float64)
     betas = range(0, 1, length=T) 
     intensities = intensity(a.log_increments)
-    @show intensities
     return Pigeons.communication_barriers(intensities, collect(betas))
 end
 
 test_normal_barrier_runs()
+
+nothing

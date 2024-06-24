@@ -13,10 +13,7 @@ function test_repro()
         ensure_to_cpu(p)
     end
     for result in results 
-        if !(result.probabilities ≈ results[1].probabilities)
-            @show result.probabilities
-            @show results[1].probabilities
-        end
+        @assert result.probabilities ≈ results[1].probabilities
         @assert result.states ≈ results[1].states
         @assert result.log_normalization ≈ results[1].log_normalization
     end
