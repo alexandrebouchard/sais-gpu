@@ -20,7 +20,7 @@ end
         states,         # D x N
         buffers,        # D x N
         log_weights,    # N 
-        log_increments, # T x N 
+        log_increments, # T x N of nothing
         @Const(betas)   # T
         )   
     n = @index(Global)  # ∈ 1 .. N 
@@ -30,18 +30,28 @@ end
         state = @view states[:, n]
         buffer = @view buffers[:, n]
         log_increment = log_density(path, betas[t], state) - log_density(path, betas[t-1], state)
-        log_increments[t, n] = log_increment
+        update_log_increment!(log_increments, t, n, log_increment)
         log_weights[n] += log_increment
         mh!(rng, path, state, buffer, betas[t]) 
     end
 end 
+
+update_log_increment!(log_increments, t, n, log_increment) = log_increments[t, n] = log_increment
+update_log_increment!(::Nothing, _, _, _) = nothing
+
+@auto struct AIS 
+    particles 
+    timing 
+    log_increments
+end
 
 function ais(path; 
         T::Int, 
         N::Int, 
         backend::Backend = CPU(), 
         seed::Int = 1,
-        multi_threaded::Bool = true, 
+        multi_threaded::Bool = true,
+        compute_increments = false, 
         elt_type::Type{E} = Float32
         ) where {E}
 
@@ -61,7 +71,7 @@ function ais(path;
     betas = copy_to_device(range(zero(E), stop=one(E), length=T), backend)
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, N)
-    log_increments = KernelAbstractions.zeros(backend, E, T, N)
+    log_increments = compute_increments ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
     prop_kernel = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)
     timing = @timed begin
         prop_kernel(rngs, path, states, buffers, log_weights, log_increments, betas, ndrange = N)
@@ -69,7 +79,7 @@ function ais(path;
     end 
     # println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
 
-    return Particles(states, log_weights), timing
+    return AIS(Particles(states, log_weights), timing, log_increments)
 end
 
 # workaround counter intuitive behaviour of KA on CPUs

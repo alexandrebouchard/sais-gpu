@@ -1,5 +1,5 @@
-using SplittableRandoms 
 include("barriers.jl")
+include("ais.jl")
 using CUDA 
 using KernelAbstractions 
 
@@ -7,10 +7,13 @@ using KernelAbstractions
 T = 5
 N = 10
 
-
-
-# TODO: check last cumsum is the same as the weights?
-
+function check_cumsum()
+    a = ais(NormalPath(2); T, N = 10, compute_increments = true) 
+    probabilities = exp.(cumsum(a.log_increments, dims = 1)[end,:]) 
+    probabilities .= probabilities ./ sum(probabilities)
+    @assert vec(probabilities) ≈ vec(a.particles.probabilities)
+end
+check_cumsum()
 
 function naive_log_g(log_increments, t, exponent::Int) # t ∈ {2, ..., T}
     T, N = size(log_increments)
