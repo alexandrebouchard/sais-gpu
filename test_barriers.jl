@@ -33,9 +33,12 @@ end
 function test_barriers(backend, exponent) 
     rng = SplittableRandom(1)
     array = rand(rng, Float32, T, N)
-    log_increments = copy_to_device(array, backend)
-    naive = [naive_log_g(array, t, exponent) for t in 2:T]
-    tested = ensure_to_cpu(compute_log_g(log_increments, exponent))
+
+    @show log_increments = copy_to_device(array, backend)
+    @show tested = ensure_to_cpu(compute_log_g(log_increments, exponent))
+
+    naive = [naive_log_g(array, t, exponent) for t in 1:T]
+    
     @assert vec(naive) ≈ vec(tested)
     @assert eltype(tested) == Float32
     return tested
