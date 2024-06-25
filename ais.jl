@@ -2,6 +2,7 @@ using CUDA
 include("SplitRandom.jl") 
 include("mh.jl")
 include("Particles.jl")
+include("barriers.jl")
 
 # D = dim 
 # N = num particles 
@@ -45,24 +46,25 @@ update_log_increment!(::Nothing, _, _, _) = nothing
 @auto struct AIS 
     particles 
     timing 
-    log_increments
+    intensity
+    barriers 
 end
 
-function ais(path; 
-        T::Int, 
-        N::Int, 
+ais(path, T::Int; kwargs...) = ais(path, range(0, 1, length = T); kwargs)
+
+function ais(path, schedule::AbstractVector; 
         backend::Backend = CPU(), 
+        N::Int = backend isa CPU ? 2^10 : 2^14, 
         seed = 1,
         multi_threaded = true,
-        compute_increments = false, 
+        compute_barriers = false, 
         explorer = RWMH(), 
         elt_type::Type{E} = Float32
         ) where {E}
 
-    if !multi_threaded && !isa(backend, CPU)
-        error("!multi_threaded only defined for CPU use")
-    end
-
+    @assert multi_threaded || backend isa CPU
+    
+    T = length(schedule) 
     rngs = SplitRandomArray(N; backend, seed) 
     D = dimensionality(path)
     states = KernelAbstractions.zeros(backend, E, D, N)
@@ -72,18 +74,20 @@ function ais(path;
     KernelAbstractions.synchronize(backend)
 
     # parallel propagation 
-    betas = copy_to_device(range(zero(E), stop=one(E), length=T), backend)
+    betas = copy_to_device(Array{E}(schedule), backend)
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, N)
-    log_increments = compute_increments ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
+    log_increments = compute_barriers ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
     prop_kernel = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)
     timing = @timed begin
         prop_kernel(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
         KernelAbstractions.synchronize(backend)
     end 
-    # println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
+    println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
+    intensity_vector = compute_barriers ? ensure_to_cpu(intensity(log_increments)) : nothing 
+    barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, collect(schedule)) : nothing
 
-    return AIS(Particles(states, log_weights), timing, log_increments)
+    return AIS(Particles(states, log_weights), timing, intensity_vector, barriers)
 end
 
 # workaround counter intuitive behaviour of KA on CPUs

@@ -27,10 +27,9 @@ function test_mix_barrier()
      N = 10000
      backend = CUDABackend() 
      target = SimpleMixture(backend)
-     a = ais(target; T, N, backend, compute_increments = true)
+     a = ais(target; T, N, backend, compute_barriers = true)
      betas = range(0, 1, length=T)  
-     intensities = intensity(a.log_increments)
-     barriers = Pigeons.communication_barriers(ensure_to_cpu(intensities), collect(betas)) 
+     barriers = a.barriers 
      return lines(0..1, x -> barriers.localbarrier(x))
 end
 

@@ -11,16 +11,16 @@ function run_bench()
     result = DataFrame(
                 N=Int[], 
                 time=Float64[], 
-                compute_increments=Bool[],
+                compute_barriers=Bool[],
                 backend=Symbol[])
-    for compute_increments in [true, false]
+    for compute_barriers in [true, false]
         for backend in [CUDABackend(), CPU()]
             # warm-up - do not include this one in results
-            ais(target; T, N=10, backend, compute_increments, explorer = RWMH(n_passes = 1)) 
+            ais(target; T, N=10, backend, compute_barriers, explorer = RWMH(n_passes = 1)) 
             # measure
             for N in map(i -> 2^i, backend isa CPU ? (0:15) : (0:20))
-                t = ais(target; T, N, backend, compute_increments, explorer = RWMH(n_passes = 1)).timing
-                push!(result, (; N, backend = backend_label(backend), time = t.time, compute_increments))
+                t = ais(target; T, N, backend, compute_barriers, explorer = RWMH(n_passes = 1)).timing
+                push!(result, (; N, backend = backend_label(backend), time = t.time, compute_barriers))
             end
         end
     end
@@ -35,7 +35,7 @@ plot(result) =
         mapping(
             :N => "Number of particles", 
             :time => "Wallclock time (s)", 
-            linestyle = :compute_increments,
+            linestyle = :compute_barriers,
             color = :backend) 
 
 

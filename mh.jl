@@ -11,13 +11,16 @@ explore!(rng, explorer::RWMH, path, state, buffer, beta) =
 function mh!(rng, path, 
         state::AbstractVector{E}, 
         buffer::AbstractVector{E}, 
-        beta::E) where {E <: AbstractFloat}
+        beta::E, 
+        ) where {E <: AbstractFloat}
     log_path_before = log_density(path, beta, state)
 
     # propose
+    exponent = rand(rng, -1:1)
+    sd = E(10)^exponent 
     for d in eachindex(state) 
         buffer[d] = state[d]
-        state[d] += randn(rng, E)
+        state[d] += randn(rng, E) * sd 
     end
 
     log_path_proposed = log_density(path, beta, state) 
