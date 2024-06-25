@@ -34,6 +34,15 @@ function log_sum_exp(log_weights; dims...)
     return m
 end
 
+function fix_intensity(point::E) where {E <: Real}
+    if point ≥ 0 
+        return point 
+    else
+        @assert isapprox(point, 0, atol = 1e-4) "Bad: $point"
+        return zero(E) 
+    end
+end
+
 # create a copy to CPU of an arbitrary array
 copy_to_cpu(array) = Array(array)
 

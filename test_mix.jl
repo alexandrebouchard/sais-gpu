@@ -10,9 +10,9 @@ function test_mix_repro()
           @show backend
           target = SimpleMixture(backend)
           # warm-up
-          ais(target; T=2, N=1, backend)
+          ais(target, 2; N=1, backend)
           # actual sampling
-          @time a = ais(target; T, N, backend)
+          @time a = ais(target, T; N, backend)
           @show a.timing
           return ensure_to_cpu(a.particles)
      end
@@ -27,7 +27,7 @@ function test_mix_barrier()
      N = 10000
      backend = CUDABackend() 
      target = SimpleMixture(backend)
-     a = ais(target; T, N, backend, compute_barriers = true)
+     a = ais(target, T; N, backend, compute_barriers = true)
      betas = range(0, 1, length=T)  
      barriers = a.barriers 
      return lines(0..1, x -> barriers.localbarrier(x))

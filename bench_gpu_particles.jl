@@ -16,10 +16,10 @@ function run_bench()
     for compute_barriers in [true, false]
         for backend in [CUDABackend(), CPU()]
             # warm-up - do not include this one in results
-            ais(target; T, N=10, backend, compute_barriers, explorer = RWMH(n_passes = 1)) 
+            ais(target, T; N=10, backend, compute_barriers, explorer = RWMH(n_passes = 1)) 
             # measure
             for N in map(i -> 2^i, backend isa CPU ? (0:15) : (0:20))
-                t = ais(target; T, N, backend, compute_barriers, explorer = RWMH(n_passes = 1)).timing
+                t = ais(target, T; N, backend, compute_barriers, explorer = RWMH(n_passes = 1)).timing
                 push!(result, (; N, backend = backend_label(backend), time = t.time, compute_barriers))
             end
         end

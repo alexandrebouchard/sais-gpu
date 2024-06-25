@@ -9,7 +9,7 @@ T = 500 # with 5000/5000 no longer pass (slight differences, probably guard digi
 
 function test_repro()
     results = map([CPU(), CPU(), CUDABackend(), CUDABackend()]) do backend
-        p = ais(NormalPath(2); N, T, backend).particles
+        p = ais(NormalPath(2), T; N, backend).particles
         ensure_to_cpu(p)
     end
     for result in results 
@@ -22,7 +22,7 @@ test_repro()
 
 function test_moments(; kwargs...)
     ndims = 2 
-    μ = ais(NormalPath(ndims); kwargs...).particles 
+    μ = ais(NormalPath(ndims), 500; kwargs...).particles 
 
     # first moment check 
     m = ∫(x -> x, μ)
@@ -32,14 +32,14 @@ function test_moments(; kwargs...)
     m = ∫(x -> (x .- 1).^2, μ)
     @assert all(x -> isapprox(x, 4; atol = 0.1), m)
 end
-test_moments(N = 100000, T = 500, elt_type = Float64) 
-test_moments(N = 100000, T = 500, elt_type = Float32)
+test_moments(N = 100000, elt_type = Float64) 
+test_moments(N = 100000, elt_type = Float32)
 
 
 function test_log_norm(; kwargs...)
     ndims = 1
-    μ = ais(NormalPath(ndims); kwargs...).particles
+    μ = ais(NormalPath(ndims), 500; kwargs...).particles
     @assert isapprox(μ.log_normalization, log(2); atol = 0.02)
 end
-test_log_norm(N = 1000, T = 500, elt_type = Float64) 
-test_log_norm(N = 1000, T = 500, elt_type = Float32)
+test_log_norm(N = 1000, elt_type = Float64) 
+test_log_norm(N = 1000, elt_type = Float32)
