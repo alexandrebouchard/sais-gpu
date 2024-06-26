@@ -7,10 +7,14 @@ include("kernels.jl")
 
 @auto struct AIS 
     particles 
+    backend
     timing 
+    schedule 
     intensity
     barriers 
 end
+
+Base.show(io::IO, a::AIS) = print(io, "AIS(backend=$(typeof(a.backend)), T=$(length(a.schedule)), N=$(n_particles(a.particles)), time=$(a.timing.time)s, ess=$(ess(a.particles)))")
 
 ais(path, T::Int; kwargs...) = ais(path, collect(range(0, 1, length = T)); kwargs...)
 
@@ -37,7 +41,8 @@ function ais(
     KernelAbstractions.synchronize(backend)
 
     # parallel propagation 
-    betas = copy_to_device(Array{E}(schedule), backend)
+    converted_schedule = Array{E}(schedule)
+    betas = copy_to_device(converted_schedule, backend)
     buffers = KernelAbstractions.zeros(backend, E, D, N) 
     log_weights = KernelAbstractions.zeros(backend, E, N)
     log_increments = compute_barriers ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
@@ -46,11 +51,13 @@ function ais(
         prop_kernel(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
         KernelAbstractions.synchronize(backend)
     end 
-    println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated]")
+
+    particles = Particles(states, log_weights)
+    #println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated] ess=$(ess(particles))")
     intensity_vector = compute_barriers ? fix_intensity.(ensure_to_cpu(intensity(log_increments))) : nothing 
     barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, collect(schedule)) : nothing
 
-    return AIS(Particles(states, log_weights), timing, intensity_vector, barriers)
+    return AIS(particles, backend, timing, converted_schedule, intensity_vector, barriers)
 end
 
 # workaround counter intuitive behaviour of KA on CPUs

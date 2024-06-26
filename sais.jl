@@ -1,4 +1,5 @@
 include("ais.jl")
+include("report.jl")
 
 @auto struct SAIS 
     n_rounds
@@ -12,6 +13,7 @@ function ais(path, sais::SAIS; kwargs...)
     schedule = collect(sais.initial_schedule) 
     for r in 1:sais.n_rounds 
         a = ais(path, schedule; kwargs...)
+        report(a, r == 1, r == sais.n_rounds)
         if r == sais.n_rounds 
             return a 
         else

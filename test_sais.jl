@@ -3,4 +3,6 @@ include("toy_normal.jl")
 include("simple_mixture.jl")
 
 backend = CUDABackend()
-ais(SimpleMixture(backend); elt_type = Float32, backend)
+target = #NormalPath(1)
+    SimpleMixture(backend)
+ais(target, SAIS(10); elt_type = Float64, backend)

@@ -7,6 +7,8 @@ import Pigeons: @auto
     log_normalization
 end
 
+ess(p::Particles) = 1 / sum(x -> x^2, p.probabilities)
+
 ensure_to_cpu(p::Particles) = 
     Particles(ensure_to_cpu(p.states), ensure_to_cpu(p.probabilities), p.log_normalization)
 
