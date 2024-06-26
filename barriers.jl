@@ -3,7 +3,7 @@ include("utils.jl")
 function intensity(log_increments) 
     g1 = compute_log_g(log_increments, 1)
     g2 = compute_log_g(log_increments, 2)
-    return sqrt.(g2 .- 2 .* g1)
+    return sqrt.(fix_intensity.(g2 .- 2 .* g1))
 end
 
 function compute_log_g(log_increments, exponent::Int) 
