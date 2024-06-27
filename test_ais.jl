@@ -1,14 +1,12 @@
 include("ais.jl")
 include("toy_normal.jl")
 
-backend = CUDABackend()
-
-
-N = 500
-T = 500 # with 5000/5000 no longer pass (slight differences, probably guard digits? see: https://discourse.julialang.org/t/different-results-when-running-on-cpu-or-gpu/42200/8)
-
 function test_repro()
-    results = map([CPU(), CPU(), CUDABackend(), CUDABackend()]) do backend
+
+    N = 500
+    T = 500 # with 5000/5000 no longer pass (slight differences, probably guard digits? see: https://discourse.julialang.org/t/different-results-when-running-on-cpu-or-gpu/42200/8)
+    
+    results = map(backends) do backend
         p = ais(NormalPath(2), T; N, backend).particles
         ensure_to_cpu(p)
     end

@@ -4,16 +4,6 @@ using CUDA
 using KernelAbstractions 
 using Pigeons
 
-T = 5
-N = 10
-
-# function check_cumsum()
-#     a = ais(NormalPath(2), T; N = 10, compute_barriers = true) 
-#     probabilities = exp.(cumsum(a.log_increments, dims = 1)[end,:]) 
-#     probabilities .= probabilities ./ sum(probabilities)
-#     @assert vec(probabilities) ≈ vec(a.particles.probabilities)
-# end
-# check_cumsum()
 
 function naive_log_g(log_increments, t, exponent::Int) # t ∈ {2, ..., T}
     T, N = size(log_increments)
@@ -41,20 +31,12 @@ function test_barriers(backend, exponent)
     return tested
 end
 
-for exponent in [1, 2]
-    cpu = test_barriers(CPU(), exponent)
-    gpu = test_barriers(CUDABackend(), exponent) 
-    @assert cpu ≈ gpu
+if gpu_available
+    for exponent in [1, 2]
+        cpu = test_barriers(CPU(), exponent)
+        gpu = test_barriers(CUDABackend(), exponent) 
+        @assert cpu ≈ gpu
+    end
 end
-
-# function test_normal_barrier_runs()
-#     T = 1000
-#     N = 1000
-#     a = ais(NormalPath(2), T; N, compute_barriers = true, elt_type = Float64)
-#     betas = range(0, 1, length=T) 
-#     intensities = intensity(a.log_increments)
-#     return Pigeons.communication_barriers(intensities, collect(betas))
-# end
-# test_normal_barrier_runs()
 
 nothing
