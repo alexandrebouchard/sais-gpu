@@ -1,4 +1,5 @@
 using CUDA
+using Pigeons
 include("SplitRandom.jl") 
 include("mh.jl")
 include("Particles.jl")
@@ -8,7 +9,8 @@ include("kernels.jl")
 @auto struct AIS 
     particles 
     backend
-    timing 
+    timing # for the kernel only
+    full_timing # for the full function call
     schedule 
     intensity
     barriers 
@@ -29,35 +31,36 @@ function ais(
         elt_type::Type{E} = Float32
         ) where {E}
 
-    @assert multi_threaded || backend isa CPU
+    full_timing = @timed begin
     
-    T = length(schedule) 
-    rngs = SplitRandomArray(N; backend, seed) 
-    D = dimensionality(path)
-    states = KernelAbstractions.zeros(backend, E, D, N)
+        @assert multi_threaded || backend isa CPU
+        
+        T = length(schedule) 
+        rngs = SplitRandomArray(N; backend, seed) 
+        D = dimensionality(path)
+        states = KernelAbstractions.zeros(backend, E, D, N)
 
-    # initialization: iid sampling from reference
-    iid_(backend, cpu_args(multi_threaded, N, backend)...)(rngs, path, states, ndrange = N) 
-    KernelAbstractions.synchronize(backend)
-
-    # parallel propagation 
-    converted_schedule = Array{E}(schedule)
-    betas = copy_to_device(converted_schedule, backend)
-    buffers = KernelAbstractions.zeros(backend, E, D, N) 
-    log_weights = KernelAbstractions.zeros(backend, E, N)
-    log_increments = compute_barriers ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
-    prop_kernel = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)
-    timing = @timed begin
-        prop_kernel(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
+        # initialization: iid sampling from reference
+        iid_(backend, cpu_args(multi_threaded, N, backend)...)(rngs, path, states, ndrange = N) 
         KernelAbstractions.synchronize(backend)
-    end 
 
-    particles = Particles(states, log_weights)
-    #println("Ran T=$T, N=$N in $(timing.time) sec [$(timing.bytes) bytes allocated] ess=$(ess(particles))")
-    intensity_vector = compute_barriers ? ensure_to_cpu(intensity(log_increments, backend)) : nothing 
-    barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, collect(schedule)) : nothing
+        # parallel propagation 
+        converted_schedule = Array{E}(schedule)
+        betas = copy_to_device(converted_schedule, backend)
+        buffers = KernelAbstractions.zeros(backend, E, D, N) 
+        log_weights = KernelAbstractions.zeros(backend, E, N)
+        log_increments = compute_barriers ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
+        prop_kernel = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)
+        timing = @timed begin
+            prop_kernel(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
+            KernelAbstractions.synchronize(backend)
+        end 
 
-    return AIS(particles, backend, timing, converted_schedule, intensity_vector, barriers)
+        particles = Particles(states, log_weights)
+        intensity_vector = compute_barriers ? ensure_to_cpu(intensity(log_increments, backend)) : nothing 
+        barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, collect(schedule)) : nothing
+    end
+    return AIS(particles, backend, timing, full_timing, converted_schedule, intensity_vector, barriers)
 end
 
 # workaround counter intuitive behaviour of KA on CPUs
