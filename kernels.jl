@@ -35,8 +35,10 @@ end
     end
 end 
 
-# Default AIS weight update
-weigh(path, _, prev_beta, cur_beta, state) = log_density(path, cur_beta, state) - log_density(path, prev_beta, state)
+# Default weighing scheme linear path 
+log_density(path, beta, state) = log_reference(path, state) + beta * log_density_ratio(path, state) 
+weigh(path, _, prev_beta, cur_beta, state) = (cur_beta - prev_beta) *  log_density_ratio(path, state) 
 
+# Only record those when adaptation needs it
 update_log_increment!(log_increments, t, n, log_increment) = log_increments[t, n] = log_increment
 update_log_increment!(::Nothing, _, _, _) = nothing

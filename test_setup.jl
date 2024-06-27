@@ -1,3 +1,6 @@
+using KernelAbstractions 
+using CUDA
+
 gpu_available = try 
     CUDA.driver_version()
     true

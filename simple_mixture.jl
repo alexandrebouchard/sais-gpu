@@ -18,17 +18,9 @@ function iid_sample!(rng, ::SimpleMixture, state::AbstractVector{E}) where {E}
     return nothing
 end
 
-function log_density(mix::SimpleMixture{A}, beta::E, state::AbstractVector{E}) where {E, A <: AbstractVector}
-    @assert length(state) == 5
-    mean1 = state[1] 
-    mean2 = state[2] 
-    sds1 = state[3] 
-    sds2 = state[4] 
-    proportion = state[5] 
-
+function log_reference(mix::SimpleMixture{A}, state::AbstractVector{E}) where {E, A <: AbstractVector}
+    mean1, mean2, sds1, sds2, proportion = state
     sum = zero(E) 
-
-    # # prior 
     if sds1 < 0 || sds1 > 100 ||
        sds2 < 0 || sds2 > 100 || proportion < 0 || proportion > 1
         return -Pigeons.inf(E)
@@ -36,14 +28,17 @@ function log_density(mix::SimpleMixture{A}, beta::E, state::AbstractVector{E}) w
     sum += normlogpdf(E(150), E(100), mean1)
     sum += normlogpdf(E(150), E(100), mean2)
     sum += -2*log(E(100))
+    return sum
+end
 
-    # # likelihood: multiply by beta
+function log_density_ratio(mix::SimpleMixture{A}, state::AbstractVector{E}) where {E, A <: AbstractVector}
+    mean1, mean2, sds1, sds2, proportion = state
+    sum = zero(E) 
     for datum in mix.data
         ll1 = log(proportion) + normlogpdf(mean1, sds1, datum)
         ll2 = log(1-proportion) + normlogpdf(mean2, sds2, datum)
-        sum += beta * logaddexp(ll1, ll2)
+        sum += logaddexp(ll1, ll2)
     end
-
     return sum
 end
 
