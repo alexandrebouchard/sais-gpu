@@ -58,7 +58,7 @@ function ais(
 
         particles = Particles(states, log_weights)
         intensity_vector = compute_barriers ? ensure_to_cpu(intensity(log_increments, backend)) : nothing 
-        barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, collect(schedule)) : nothing
+        barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, converted_schedule) : nothing
     end
     return AIS(particles, backend, timing, full_timing, converted_schedule, intensity_vector, barriers)
 end

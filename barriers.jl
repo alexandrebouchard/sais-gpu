@@ -6,7 +6,9 @@ function intensity(log_increments)
     return sqrt.(fix_intensity.(g2 .- 2 .* g1))
 end
 
-intensity(log_increments, backend) =
+
+intensity(log_increments::AbstractArray{Float64}, _) = intensity(log_increments)
+intensity(log_increments::AbstractArray{Float32}, backend) =
     # force to move to Float64, otherwise global barrier estimate 
     # too imprecise (detected in test_large_t.jl)
     intensity(copy_to_device(log_increments, backend, Float64))
