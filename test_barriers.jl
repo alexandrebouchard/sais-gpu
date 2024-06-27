@@ -21,19 +21,21 @@ function naive_log_g(log_increments, t, exponent::Int) # t ∈ {2, ..., T}
 end
 
 function test_barriers(backend, exponent) 
+    T = 5
+    N = 10
     rng = SplittableRandom(1)
     array = rand(rng, Float32, T, N)
     log_increments = copy_to_device(array, backend)
     naive = [naive_log_g(array, t, exponent) for t in 2:T]
-    tested = ensure_to_cpu(compute_log_g(log_increments, exponent))
+    log_weights = cumsum(log_increments, dims = 1)
+    tested = ensure_to_cpu(compute_log_g(log_weights, log_increments, exponent))
     @assert vec(naive) ≈ vec(tested)
     @assert eltype(tested) == Float32
     return tested
 end
-
-if gpu_available
-    for exponent in [1, 2]
-        cpu = test_barriers(CPU(), exponent)
+for exponent in [1, 2]
+    cpu = test_barriers(CPU(), exponent)
+    if gpu_available
         gpu = test_barriers(CUDABackend(), exponent) 
         @assert cpu ≈ gpu
     end

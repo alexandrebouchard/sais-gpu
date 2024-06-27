@@ -20,11 +20,11 @@ end
 
 function log_reference(mix::SimpleMixture{A}, state::AbstractVector{E}) where {E, A <: AbstractVector}
     mean1, mean2, sds1, sds2, proportion = state
-    sum = zero(E) 
     if sds1 < 0 || sds1 > 100 ||
-       sds2 < 0 || sds2 > 100 || proportion < 0 || proportion > 1
-        return -Pigeons.inf(E)
-    end
+        sds2 < 0 || sds2 > 100 || proportion < 0 || proportion > 1
+         return -Pigeons.inf(E)
+     end
+    sum = zero(E) 
     sum += normlogpdf(E(150), E(100), mean1)
     sum += normlogpdf(E(150), E(100), mean2)
     sum += -2*log(E(100))
@@ -33,6 +33,10 @@ end
 
 function log_density_ratio(mix::SimpleMixture{A}, state::AbstractVector{E}) where {E, A <: AbstractVector}
     mean1, mean2, sds1, sds2, proportion = state
+    if sds1 < 0 || sds1 > 100 ||
+        sds2 < 0 || sds2 > 100 || proportion < 0 || proportion > 1
+         return -Pigeons.inf(E)
+     end
     sum = zero(E) 
     for datum in mix.data
         ll1 = log(proportion) + normlogpdf(mean1, sds1, datum)
