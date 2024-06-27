@@ -50,9 +50,9 @@ function ais(
         buffers = KernelAbstractions.zeros(backend, E, D, N) 
         log_weights = KernelAbstractions.zeros(backend, E, N)
         log_increments = compute_barriers ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
-        prop_kernel = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)
+        propagate_and_weigh! = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)
         timing = @timed begin
-            prop_kernel(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
+            propagate_and_weigh!(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
             KernelAbstractions.synchronize(backend)
         end 
 
