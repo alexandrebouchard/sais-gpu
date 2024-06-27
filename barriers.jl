@@ -6,6 +6,12 @@ function intensity(log_increments)
     return sqrt.(fix_intensity.(g2 .- 2 .* g1))
 end
 
+intensity(log_increments, backend) =
+    # force to move to Float64, otherwise global barrier estimate 
+    # too imprecise (detected in test_large_t.jl)
+    intensity(copy_to_device(log_increments, backend, Float64))
+
+
 function compute_log_g(log_increments, exponent::Int) 
     T, _ = size(log_increments) 
     log_weights = cumsum(log_increments, dims = 1)
