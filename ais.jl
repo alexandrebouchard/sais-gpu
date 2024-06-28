@@ -54,11 +54,13 @@ function ais(
         timing = @timed begin
             propagate_and_weigh!(rngs, path, explorer, states, buffers, log_weights, log_increments, betas, ndrange = N)
             KernelAbstractions.synchronize(backend)
+            nothing
         end 
 
         particles = Particles(states, log_weights)
         intensity_vector = compute_barriers ? ensure_to_cpu(intensity(log_increments, backend)) : nothing 
         barriers = compute_barriers ? Pigeons.communication_barriers(intensity_vector, converted_schedule) : nothing
+        nothing
     end
     return AIS(particles, backend, timing, full_timing, converted_schedule, intensity_vector, barriers)
 end

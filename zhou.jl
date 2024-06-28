@@ -76,15 +76,17 @@ function ais(
                 log_weights .= log_weights .+ delta .* log_ratios
                 KernelAbstractions.synchronize(backend)
             end
+            nothing
         end
         particles = Particles(states, log_weights)
+        nothing
     end
     return AIS(particles, backend, timing, full_timing, schedule, nothing, nothing)
 end
 
 function find_delta(log_weights, log_ratios, divergence, max) 
     f(x) = objective(log_weights, log_ratios, x) - divergence
-    if f(max) < 0
+    if f(max) ≤ 0
         return max
     else
         find_zero(f, (0, max))
