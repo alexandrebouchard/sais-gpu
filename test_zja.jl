@@ -1,4 +1,4 @@
-include("zhou.jl")
+include("zja.jl")
 include("sais.jl")
 include("simple_mixture.jl")
 using DataFrames
@@ -14,9 +14,9 @@ result = DataFrame(
     beta = Float64[]
 )
 
-scheduler_label(::Zhou) = :Zhou 
+scheduler_label(::ZJA) = :ZJA 
 scheduler_label(::SAIS) = :SAIS 
-for scheduler in [Zhou(0.00001), SAIS(12)]
+for scheduler in [ZJA(0.00001), SAIS(12)]
     a = ais(target, scheduler; backend, elt_type = Float64) 
     @show a
     for i in eachindex(a.schedule) 
@@ -36,14 +36,14 @@ p = data(result) *
     )
 axis = (width = 225, height = 225)
 fg = draw(p; axis)
-save("test_zhou.png", fg)
+save("test_zja.png", fg)
 
 
 ### TODO: check the path is linear (i.e. exclude the Normal example)
 # maybe OK, ToyNormal not providing the log_prior
 
 # target = SimpleMixture(CPU()) 
-# a = ais(target, Zhou(0.01))
+# a = ais(target, ZJA(0.01))
 # @show a.schedule 
 
 # TODO:

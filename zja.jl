@@ -2,7 +2,7 @@ using CUDA
 using Roots
 include("ais.jl")
 
-struct Zhou 
+struct ZJA 
     divergence::Float64
 end
 
@@ -33,7 +33,7 @@ end
 
 
 function ais(
-        path, schedule_optimizer::Zhou; 
+        path, schedule_optimizer::ZJA; 
         backend::Backend = CPU(), 
         N::Int = backend isa CPU ? 2^10 : 2^14, 
         seed = 1,
