@@ -8,6 +8,7 @@ all_reports() = [
         "  allc(B) "   => a -> a.timing.bytes,
         "   ess    "   => a -> ess(a.particles),
         "    Λ     "   => a -> a.barriers.globalbarrier,
+        "log(Z₁/Z₀)"   => a -> a.particles.log_normalization,
     ]
 
 percent_time_in_kernel(a) = a.timing.time / a.full_timing.time

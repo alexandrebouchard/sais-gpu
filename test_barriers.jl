@@ -35,7 +35,7 @@ function test_barriers(backend, exponent)
 end
 for exponent in [1, 2]
     cpu = test_barriers(CPU(), exponent)
-    if gpu_available
+    if gpu_available()
         gpu = test_barriers(CUDABackend(), exponent) 
         @assert cpu ≈ gpu
     end

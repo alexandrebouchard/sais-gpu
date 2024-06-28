@@ -20,6 +20,6 @@ function test_mix_repro()
      @assert outputs[1].states ≈ outputs[2].states
      return nothing
 end 
-if gpu_available
+if gpu_available()
      test_mix_repro()
 end

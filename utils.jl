@@ -58,3 +58,10 @@ function copy_to_device(array::AbstractArray{E, N}, backend, ::Type{F}) where {E
     return result
 end
 
+gpu_available() = try 
+    CUDA.driver_version()
+    true
+catch 
+    false
+end
+

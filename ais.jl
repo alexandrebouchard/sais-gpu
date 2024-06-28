@@ -16,7 +16,7 @@ include("kernels.jl")
     barriers 
 end
 
-Base.show(io::IO, a::AIS) = print(io, "AIS(backend=$(typeof(a.backend)), T=$(length(a.schedule)), N=$(n_particles(a.particles)), time=$(a.timing.time)s, ess=$(ess(a.particles)))")
+Base.show(io::IO, a::AIS) = print(io, "AIS(backend=$(typeof(a.backend)), T=$(length(a.schedule)), N=$(n_particles(a.particles)), time=$(a.timing.time)s, ess=$(ess(a.particles)), lognorm=$(a.particles.log_normalization))")
 
 ais(path, T::Int; kwargs...) = ais(path, collect(range(0, 1, length = T)); kwargs...)
 
