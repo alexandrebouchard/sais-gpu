@@ -1,6 +1,7 @@
 include("zja.jl")
 include("sais.jl")
 include("simple_mixture.jl")
+include("toy_normal.jl")
 using DataFrames
 using AlgebraOfGraphics
 using CairoMakie 
@@ -20,6 +21,20 @@ function predict_t()
     @assert isapprox(empirical, prediction; rtol=0.01)
 end
 predict_t()
+
+function check_crashes() 
+    target = NormalPath(1) 
+    crashed = false
+    try
+        # this should crash since NormalPath is not defined 
+        # using the refererence & ratio interface
+        ais(target, ZJA(0.1))
+    catch
+        crashed = true 
+    end 
+    @assert crashed
+end
+check_crashes() 
 
 function compute_both()
     backend = CPU() 

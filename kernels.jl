@@ -35,10 +35,12 @@ end
     end
 end 
 
-# Default weighing scheme linear path 
+# Default weighing scheme: linear path 
 log_density(path, beta, state) = log_reference(path, state) + beta * log_density_ratio(path, state) 
 weigh(path, _, prev_beta, cur_beta, state) = (cur_beta - prev_beta) *  log_density_ratio(path, state) 
 
 # Only record those when adaptation needs it
-update_log_increment!(log_increments, t, n, log_increment) = log_increments[t, n] = log_increment
+function update_log_increment!(log_increments, t, n, log_increment) 
+    log_increments[t, n] = log_increment
+end
 update_log_increment!(::Nothing, _, _, _) = nothing
