@@ -5,62 +5,60 @@ using DataFrames
 using AlgebraOfGraphics
 using CairoMakie 
 
-backend = CPU() 
-target = SimpleMixture(backend) 
-
-result = DataFrame(
-    scheme = Symbol[],
-    normalized_index = Float64[], 
-    beta = Float64[]
-)
-
-scheduler_label(::ZJA) = :ZJA 
-scheduler_label(::SAIS) = :SAIS 
-for scheduler in [ZJA(0.00001), SAIS(12)]
+function predict_t() 
+    backend = CPU() 
+    target = SimpleMixture(backend) 
+    Λ = 7.1 # from SAIS run 
+    # formula at equi-divergence (section 5.1)
+    #   Λ = T √div 
+    #   => T = Λ / √div 
+    div = 0.00001 
+    scheduler = ZJA(div)
     a = ais(target, scheduler; backend, elt_type = Float64) 
-    @show a
-    for i in eachindex(a.schedule) 
-        push!(result, (; 
-            scheme = scheduler_label(scheduler), 
-            normalized_index = Float64(i) / length(a.schedule), 
-            beta = a.schedule[i]))
+    @show empirical = length(a.schedule)
+    @show prediction = Λ / sqrt(div)
+    @assert isapprox(empirical, prediction; rtol=0.01)
+end
+predict_t()
+
+function compute_both()
+    backend = CPU() 
+    target = SimpleMixture(backend) 
+    result = DataFrame(
+        scheme = Symbol[],
+        normalized_index = Float64[], 
+        beta = Float64[]
+    )
+
+    scheduler_label(::ZJA) = :ZJA 
+    scheduler_label(::SAIS) = :SAIS 
+    for scheduler in [ZJA(0.00001), SAIS(12)]
+        a = ais(target, scheduler; backend, elt_type = Float64) 
+        @show a
+        for i in eachindex(a.schedule) 
+            push!(result, (; 
+                scheme = scheduler_label(scheduler), 
+                normalized_index = Float64(i) / length(a.schedule), 
+                beta = a.schedule[i]))
+        end
     end
+    return result 
 end
 
-p = data(result) * 
-    visual(Lines) *
-    mapping(
-        :normalized_index, 
-        :beta, 
-        color = :scheme
-    )
-axis = (width = 225, height = 225)
-fg = draw(p; axis)
-save("test_zja.png", fg)
+function plot(result)
+    p = data(result) * 
+        visual(Lines) *
+        mapping(
+            :normalized_index, 
+            :beta, 
+            color = :scheme
+        )
+    axis = (width = 225, height = 225)
+    fg = draw(p; axis)
+    save("test_zja.png", fg)
+end
 
 
-### TODO: check the path is linear (i.e. exclude the Normal example)
-# maybe OK, ToyNormal not providing the log_prior
+# result = compute_both() 
+# plot(result) 
 
-# target = SimpleMixture(CPU()) 
-# a = ais(target, ZJA(0.01))
-# @show a.schedule 
-
-# TODO:
-#     - test it crashes with toy normals 
-#     - test schedule agree (number of points and locations)
-
-# test will be: compare the learned schedules!
-
-# function test_agreement()
-#     target = SimpleMixture(CPU()) 
-#     schedule = [0.0, 0.2, 0.3, 1.0]
-
-#     # compute divergences off line
-#     a = ais(target, schedule; N = 5, explorer = RWMH(0), compute_barriers = true) 
-#     divergences = (a.intensity) .^ 2
-
-#     # check agreement of the online code
-#     log_weights = cumsum(log_increments, dims = 1)
-# end
-# test_agreement()

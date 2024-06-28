@@ -1,5 +1,6 @@
 include("test_setup.jl")
 
+include("test_zja.jl")
 include("test_split.jl")
 include("test_large_t.jl")
 include("test_profile.jl")
