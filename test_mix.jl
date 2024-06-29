@@ -6,7 +6,7 @@ T = 5
 N = 10000
 
 function test_mix_repro()
-     outputs = map([CPU(), CUDABackend()]) do backend 
+     outputs = map(backends()) do backend 
           @show backend
           target = SimpleMixture(backend)
           # warm-up
@@ -16,8 +16,10 @@ function test_mix_repro()
           @show a.timing
           return ensure_to_cpu(a.particles)
      end
-     @assert outputs[1].probabilities ≈ outputs[2].probabilities
-     @assert outputs[1].states ≈ outputs[2].states
+     if gpu_available()
+          @assert outputs[1].probabilities ≈ outputs[2].probabilities
+          @assert outputs[1].states ≈ outputs[2].states
+     end
      return nothing
 end 
 test_mix_repro()
