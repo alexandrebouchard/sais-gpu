@@ -1,5 +1,6 @@
 include("utils.jl")
 import Pigeons: @auto
+using Statistics 
 
 @auto struct Particles
     states
@@ -26,3 +27,10 @@ integrate(f::Function, p::Particles) =
     end
 
 ∫ = integrate 
+
+Statistics.mean(μ::Particles) = ∫(x -> x, μ) 
+function Statistics.var(μ::Particles) 
+    m = Statistics.mean(μ)
+    return ∫(x -> (x - m).^2, μ)
+end
+Statistics.std(μ::Particles) = sqrt.(var(μ))
