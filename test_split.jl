@@ -12,7 +12,7 @@ end
 function test_split_repro()
     N = 100
     prev = nothing
-    for backend in [CPU(), CUDABackend()]
+    for backend in backends()
         @show backend
         for i in 1:5
             rngs = SplitRandomArray(N; backend)
@@ -33,7 +33,7 @@ end
 
 function test_split_moments() 
     N = 2^20
-    for backend in [CPU(), CUDABackend()]
+    for backend in backends()
         rngs = SplitRandomArray(N; backend)
         out = KernelAbstractions.zeros(backend, Float32, N)
         #@btime begin 

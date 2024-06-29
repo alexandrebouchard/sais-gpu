@@ -42,19 +42,6 @@ function test_mix_moments()
      @assert isapprox(s[5], 0.2, atol=0.05) 
      return μ 
 end
-test_mix_moments() 
-
-# function test_mix_barrier() 
-#      T = 200
-#      N = 10000
-#      backend = CUDABackend() 
-#      target = SimpleMixture(backend)
-#      a = ais(target, T; N, backend, compute_barriers = true)
-#      betas = range(0, 1, length=T)  
-#      barriers = a.barriers 
-#      return lines(0..1, x -> barriers.localbarrier(x))
-# end
-
-# using CairoMakie 
-# p = test_mix_barrier() 
-# save("test_mix_barrier.png", p)
+if gpu_available()
+     test_mix_repro()
+end

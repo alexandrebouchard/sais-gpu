@@ -19,4 +19,7 @@ function log_density(::NormalPath, beta::E, state::AbstractVector{E}) where {E}
     return sum
 end
 
+weigh(path::NormalPath, _, prev_beta, cur_beta, state) = 
+    log_density(path, cur_beta, state) - log_density(path, prev_beta, state)
+
 dimensionality(path::NormalPath) = path.dim

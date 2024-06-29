@@ -3,12 +3,15 @@ all_reports() = [
         # width of 9     # compute that report item
         "    T     "   => a -> length(a.schedule),
         "    N     "   => a -> n_particles(a.particles),
-        "  time(s) "   => a -> a.timing.time, 
+        "  time(s) "   => a -> a.full_timing.time, 
+        "  %t in k "   => a -> percent_time_in_kernel(a),
         "  allc(B) "   => a -> a.timing.bytes,
         "   ess    "   => a -> ess(a.particles),
         "    Λ     "   => a -> a.barriers.globalbarrier,
+        "log(Z₁/Z₀)"   => a -> a.particles.log_normalization,
     ]
 
+percent_time_in_kernel(a) = a.timing.time / a.full_timing.time
 
 function report(a::AIS, is_first, is_last)
     reports = reports_available(a)
