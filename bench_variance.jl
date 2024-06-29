@@ -33,7 +33,8 @@ function run_experiments(; n_repeats = 100)
                 for seed in 1:n_repeats
                     a = ais(target, scheme(scheme_type, n_rounds); seed, backend)
                     time = a.full_timing.time
-
+                    lognorm = a.particles.log_normalization 
+                    push!(result, (; ))
                 end
             end
         end
