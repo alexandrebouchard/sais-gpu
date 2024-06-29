@@ -3,7 +3,7 @@ include("toy_normal.jl")
 include("simple_mixture.jl")
 
 
-for backend in backends 
+for backend in backends() 
     for target in [NormalPath(2), SimpleMixture(backend)]
         for seed in [1, SplittableRandom(1)]
             for multi_threaded in (backend isa CPU ? [true, false] : [true])

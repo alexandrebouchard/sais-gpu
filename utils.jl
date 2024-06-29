@@ -65,3 +65,4 @@ catch
     false
 end
 
+backends() = gpu_available() ? [CPU(), CUDABackend()] : [CPU()]
