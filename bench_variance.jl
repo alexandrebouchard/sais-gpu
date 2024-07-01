@@ -1,4 +1,5 @@
 include("sais.jl")
+include("zja.jl")
 include("simple_mixture.jl")
 using DataFrames 
 using CairoMakie 
@@ -13,28 +14,43 @@ end
 # seed 1 => -782.1570317771477
 # seed 2 => -781.9446689097091
 
-# Note: control n threads
 
-# turn off GC
 
 scheme(::Type{SAIS}, n_rounds) = SAIS(n_rounds)
-scheme(::Type{Int}, n_rounds) = 2^n_rounds 
+scheme(::Type{FixedSchedule}, n_rounds) = FixedSchedule(2^n_rounds) 
 scheme(::Type{ZJA}, n_rounds) = ZJA((7.0 / 2^n_rounds)^2)
 
-function run_experiments(; n_repeats = 100)
+@assert Threads.nthreads() == 1
+
+function run_experiments(; n_repeats = 100, max_rounds = 2, N = 2^14)
     result = DataFrame(
         time = Float64[],
         lognorm = Float64[],
+        scheme = Symbol[],
+        T = Int[],
+        backend=Symbol[]
     )
 
     for backend in backends()
-        for scheme_type in [SAIS, Int, ZJA]
-            for n_rounds in 1:5
+        target = SimpleMixture(backend)
+        for scheme_type in [SAIS, FixedSchedule, ZJA]
+            for n_rounds in 1:max_rounds
                 for seed in 1:n_repeats
-                    a = ais(target, scheme(scheme_type, n_rounds); seed, backend)
+                    s = scheme(scheme_type, n_rounds)
+                    GC.enable(false)
+                    a = ais(target, s; seed, backend, show_report = false)
+                    GC.enable(true)
                     time = a.full_timing.time
                     lognorm = a.particles.log_normalization 
-                    push!(result, (; ))
+                    scheme_symbol = Symbol(string(s))
+                    push!(result, (; 
+                        time, 
+                        lognorm, 
+                        scheme = scheme_symbol,
+                        T = length(a.schedule),
+                        backend = backend_label(backend),
+                        )
+                    )
                 end
             end
         end
@@ -44,10 +60,7 @@ function run_experiments(; n_repeats = 100)
     return result
 end
 
-
-
-
-
+result = run_experiments()
 
 
 

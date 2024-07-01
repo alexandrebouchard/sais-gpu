@@ -66,3 +66,6 @@ catch
 end
 
 backends() = gpu_available() ? [CPU(), CUDABackend()] : [CPU()]
+
+backend_label(::CPU) = :CPU 
+backend_label(_)     = :GPU

@@ -1,4 +1,5 @@
 include("toy_normal.jl") 
+include("sais.jl")
 using DataFrames
 using AlgebraOfGraphics
 using CairoMakie 
@@ -26,8 +27,7 @@ function run_bench()
     end
     return result
 end
-backend_label(::CPU) = :CPU 
-backend_label(_)     = :GPU
+
 
 plot(result) =
     data(result) * 

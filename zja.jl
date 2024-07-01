@@ -39,7 +39,8 @@ function ais(
         seed = 1,
         multi_threaded = true,
         explorer = RWMH(), 
-        elt_type::Type{E} = Float32
+        elt_type::Type{E} = Float32, 
+        show_report::Bool = true
         ) where {E}
 
     full_timing = @timed begin
