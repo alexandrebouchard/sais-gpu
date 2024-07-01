@@ -1,3 +1,5 @@
+using KernelAbstractions
+
 """
 Normalize a vector of non-negative weights stored in 
 log-scale. Returns the log normalization. 
@@ -49,11 +51,15 @@ function copy_to_device(array::AbstractArray{E, N}, backend, ::Type{F}) where {E
     return result
 end
 
-gpu_available() = try 
-    CUDA.driver_version()
-    true
-catch 
-    false
+dummy = ""
+function gpu_available() 
+    try 
+        # dummy needed to avoid compiler removing that line!
+        global dummy = CUDA.driver_version()
+        return true
+    catch 
+        return false
+    end
 end
 
 backends() = gpu_available() ? [CPU(), CUDABackend()] : [CPU()]
