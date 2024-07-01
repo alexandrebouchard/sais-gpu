@@ -4,7 +4,7 @@ function intensity(log_increments)
     log_weights = cumsum(log_increments, dims = 1)
     g1 = compute_log_g(log_weights, log_increments, 1)
     g2 = compute_log_g(log_weights, log_increments, 2)
-    return sqrt.(fix_intensity.(g2 .- 2 .* g1))
+    return sqrt.(ensure_non_negative.(g2 .- 2 .* g1))
 end
 
 
@@ -29,3 +29,7 @@ function compute_log_g(log_weights, log_increments, exponent::Int)
     return vec(result)
 end
 
+# we have to do this because some slightly negative 
+# (i.e., larger than -1e4) intensities do pop up 
+# because of numerical error
+ensure_non_negative(x) = max(x, 0)

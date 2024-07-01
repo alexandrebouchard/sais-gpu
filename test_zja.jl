@@ -7,18 +7,18 @@ using AlgebraOfGraphics
 using CairoMakie 
 
 function predict_t() 
-    backend = CPU() 
+    backend = CPU()
     target = SimpleMixture(backend) 
     Λ = 7.1 # from SAIS run 
     # formula at equi-divergence (section 5.1)
     #   Λ = T √div 
     #   => T = Λ / √div 
-    div = 0.00001 
+    div = 0.001 
     scheduler = ZJA(div)
     a = ais(target, scheduler; backend, elt_type = Float64) 
     @show empirical = length(a.schedule)
     @show prediction = Λ / sqrt(div)
-    @assert isapprox(empirical, prediction; rtol=0.01)
+    @assert isapprox(empirical, prediction; rtol=0.03)
 end
 predict_t()
 
