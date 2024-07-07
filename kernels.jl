@@ -18,7 +18,7 @@ end
         states,         # D x N
         buffers,        # D x N
         log_weights,    # N 
-        log_increments, # T x N of nothing
+        log_increments, # T x N or nothing
         @Const(betas)   # T
         ) 
 
@@ -44,3 +44,4 @@ function update_log_increment!(log_increments, t, n, log_increment)
     log_increments[t, n] = log_increment
 end
 update_log_increment!(::Nothing, _, _, _) = nothing
+
