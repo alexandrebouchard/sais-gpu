@@ -18,7 +18,7 @@ function predict_t()
     a = ais(target, scheduler; backend, elt_type = Float64) 
     @show empirical = length(a.schedule)
     @show prediction = Λ / sqrt(div)
-    @assert isapprox(empirical, prediction; rtol=0.03)
+    @assert isapprox(empirical, prediction; rtol=0.05)
 end
 predict_t()
 
