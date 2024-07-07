@@ -1,16 +1,14 @@
 include("ais.jl")
 using CairoMakie
 
-function plot_barrier(ais)
-    plot = lines(0.01..1, x -> ais.barriers.localbarrier(x))
-    return plot
-end
+plot_barrier(ais) =
+    lines(0.01..1, x -> ais.barriers.localbarrier(x))
 
 
-#      
-#      barriers = a.barriers 
-#      return 
-# end
+plot_cumulative(ais) =  
+    lines(0..1, x -> ais.barriers.cumulativebarrier(x))
+
+
 
 # using CairoMakie 
 # p = test_mix_barrier() 
