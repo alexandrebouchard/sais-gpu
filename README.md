@@ -61,3 +61,30 @@ using Revise
 ### Test your setup
 
 In the GPU node's julia: `include("test.jl")`
+
+
+
+### Trouble shooting
+
+The fact the CUDA node do not have internet access can create challenge, sometimes leading to 
+the error message "CUDA could not find an appropiate CUDA runtime...". 
+
+To deal with this:
+
+- in the head node:
+
+```
+using CUDA
+[ignore error message]
+CUDA.set_runtime_version!(v"12.5")
+exit() 
+```
+
+Restart julia and 
+
+```
+]
+precompile
+```
+
+After that you should be able to load CUDA from the GPU nodes.

@@ -33,15 +33,15 @@ function run_experiments(; n_repeats = 100, max_rounds = 8, N = 2^14)
         backend=Symbol[]
     )
 
-    for backend in backends()
+    for backend in [CUDABackend()] #backends()
         target = SimpleMixture(backend)
         for scheme_type in [SAIS, FixedSchedule, ZJA]
             for n_rounds in 3:max_rounds
                 for seed in 1:(n_repeats+1)
                     s = scheme(scheme_type, n_rounds)
-                    GC.enable(false)
+                    #GC.enable(false)
                     a = ais(target, s; seed, backend, show_report = false)
-                    GC.enable(true)
+                    #GC.enable(true)
                     time = a.full_timing.time
                     lognorm = a.particles.log_normalization 
                     scheme_symbol = Symbol(string(s))
@@ -65,7 +65,7 @@ function run_experiments(; n_repeats = 100, max_rounds = 8, N = 2^14)
     return result
 end
 
-#result = run_experiments(; n_repeats = 2)
+result = run_experiments(; n_repeats = 2)
 
 plot(result) = 
     data(result) * 

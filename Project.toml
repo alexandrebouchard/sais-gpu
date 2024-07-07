@@ -7,8 +7,10 @@ CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
-Metal = "dde4c033-4e86-420c-a63e-0dd931031962"
 Pigeons = "0eb8d820-af6a-4919-95ae-11206f830c31"
 Roots = "f2b01f46-fcfa-551c-844a-d8ac1e96c665"
 SplittableRandoms = "8efc31e9-3fb0-4277-b18c-5a3d5d07abad"
 StatsFuns = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
+
+[extras]
+CUDA_Runtime_jll = "76a88914-d11a-5bdc-97e0-2f5a05c973a2"
