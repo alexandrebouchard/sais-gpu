@@ -1,0 +1,4 @@
+nextflow/.nextflow.log*
+nextflow/.nextflow/*
+nextflow/work/*
+LocalPreferences.toml
