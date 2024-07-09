@@ -1,14 +1,13 @@
 include { crossProduct; collectCSVs; deliverables } from './utils.nf'
 
 def julia_depot_dir = file("/home/alexbou/st-alexbou-1/abc/depot")
-def julia_env_dir = file("..")
+def toml_files = file("../*.toml")
+def jl_files = file("../*.jl")
 def deliv = deliverables(workflow)
 
 workflow  {
-    test(julia_depot_dir, julia_env_dir)
+    test(julia_depot_dir, toml_files, jl_files)
 }
-
-// TODO: add explicit deps to toml/julia files to ensure resume works properly...
 
 process test {
     debug true
@@ -18,13 +17,11 @@ process test {
     scratch false
     input:
         env JULIA_DEPOT_PATH
-        path julia_env
+        path toml_files
+        path jl_files
     """
-    #!/usr/bin/env -S julia 
+    #!/usr/bin/env -S julia --project=@.
 
-    using Pkg
-    Pkg.activate("$julia_env")
-
-    include("$julia_env/test_unid.jl")
+    include("test_unid.jl")
     """
 }
