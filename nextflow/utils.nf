@@ -51,8 +51,9 @@ process collectCSVsProcess {
     debug true
     cache true
     scratch false
+    cpus 1
     time { 10.m * Math.pow(2, task.attempt-1) }
-    //memory { 2.GB * Math.pow(2, task.attempt-1) }
+    memory { 2.GB * Math.pow(2, task.attempt-1) }
     errorStrategy 'retry'
     maxRetries '4'
     input: 
