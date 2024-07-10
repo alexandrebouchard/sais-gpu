@@ -15,10 +15,10 @@ function run_experiments(; seeds, rounds, n_particles)
         backend=Symbol[]
     )
 
-    collected_seeds = collect(seeds)
     if !(0 ∈ collected_seeds) 
         push!(collected_seeds, 0)
     end
+    sort!(collected_seeds)
 
     for backend in backends()
         @show backend
