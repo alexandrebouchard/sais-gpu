@@ -51,11 +51,6 @@ process collectCSVsProcess {
     debug true
     cache true
     scratch false
-    cpus 1
-    time { 10.m * Math.pow(2, task.attempt-1) }
-    memory { 2.GB * Math.pow(2, task.attempt-1) }
-    errorStrategy 'retry'
-    maxRetries '4'
     input: 
         // we use file not path, as we want the json strings to be dumped into files
         file jsonObjects
@@ -67,5 +62,5 @@ process collectCSVsProcess {
     """
 }
 
+def deliverables(workflow) { 'deliverables/' + workflow.scriptName.replace('.nf','') + "_" + workflow.start }
 
-def deliverables(workflow) { 'deliverables/' + workflow.scriptName.replace('.nf','') }

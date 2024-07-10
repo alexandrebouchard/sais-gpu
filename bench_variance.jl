@@ -10,13 +10,13 @@ function run_experiments(; seeds, rounds, n_particles)
         time = Float64[],
         lognorm = Float64[],
         type = Symbol[],
-        scheme = Symbol[],
+        scheme = String[], # we need string otherwise does not get quoted properly
         T = Int[],
         backend=Symbol[]
     )
 
     collected_seeds = collect(seeds)
-    if 0 ∈ collected_seeds 
+    if !(0 ∈ collected_seeds) 
         push!(collected_seeds, 0)
     end
 
@@ -36,7 +36,7 @@ function run_experiments(; seeds, rounds, n_particles)
                         show_report = false)
                     time = a.full_timing.time
                     lognorm = a.particles.log_normalization 
-                    scheme_symbol = Symbol(string(s))
+                    scheme_symbol = string(s)
                     if seed > 0 # skip first: compile time..
                         push!(result, 
                             (; 
@@ -57,5 +57,5 @@ function run_experiments(; seeds, rounds, n_particles)
     return result
 end
 
-#result = run_experiments(; seeds = 1:10, rounds = 4:8, N = 2^14)
-#CSV.write("bench_variance.csv", result; delim = ";")
+# result = run_experiments(; seeds = 1:10, rounds = 2:4, n_particles = 1000)
+# CSV.write("bench_variance.csv", result; quotestrings = true)

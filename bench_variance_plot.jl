@@ -2,42 +2,35 @@ include("bench_variance_utils.jl")
 
 using CairoMakie 
 using AlgebraOfGraphics
-
-result = DataFrame(CSV.File("bench_variance.csv"; delim = ";"))
-
-# function plot(result) 
-#     result = subset(result, :type => t -> t .!= :FixedSchedule)
-#     groups = groupby(result, [:T, :type, :backend])
-#     transformed = combine(groups, :lognorm => rmse)
-#     data(transformed) *
-#         visual() * 
-#         mapping(
-#             :T, #:time, 
-#             :lognorm_rmse, 
-#             #marker = :scheme,
-#             color = :type,
-#             row = :backend,
-#         )
-
-# end
+using Statistics
 
 function plot_vars(result) 
-    #result = subset(result, :type => t -> t .!= :FixedSchedule)
     groups = groupby(result, [:type, :backend, :scheme])
-    summaries = combine(groups, 
+    @show summaries = combine(groups, 
                     :lognorm => (x -> var(relative_z_hat.(x))) => :variance,
-                    :time => mean => :mean_time
+                    :time => mean => :mean_time,
+                    :time => std => :std_time,
+                    :T => mean => :mean_T,
+                    :T => std => :std_T
                 )
     data(summaries) * 
+        (visual(Lines) + visual(Scatter)) *
         mapping(
-            :mean_time, 
-            :variance, 
+            :mean_time => "Mean time (s)", 
+            :variance => "Relative variance", 
             color = :type,
             row = :backend,
         )
 end
 
-p = plot_vars(result)
-axis = (width = 225, height = 225, yscale = log10, xscale = log10)
-fg = draw(p; axis)
-save("bench_variance.png", fg)
+function create_fig(csv_path) 
+    result = DataFrame(CSV.File(csv_path))
+    p = plot_vars(result)
+    axis = (width = 225, height = 225, yscale = log10, xscale = log10)
+    fg = draw(p; axis)
+    return fg
+end
+
+# fg = create_fig("nextflow/deliverables/bench_variance/aggregated/bench_variance_tmp.csv")
+# save("bench_variance.png", fg)
+##
