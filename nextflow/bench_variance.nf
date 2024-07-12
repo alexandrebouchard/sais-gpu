@@ -11,7 +11,9 @@ def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,b
 def deliv = deliverables(workflow)
 
 def variables = [
-    seed: (1..1000),
+    job_seed: (1..100),
+    job_model: ["Unid", "SimpleMixture"],
+    job_scheme_types: ["SAIS", "ZJA", "FixedSchedule"],
 ]
 
 workflow  {
@@ -22,7 +24,7 @@ workflow  {
 
 process run_experiment {
     debug false
-    time 20.min
+    time 40.min
     memory = 16.GB
     scratch true 
     clusterOptions '--nodes 1', '--account st-alexbou-1-gpu', '--gpus 1'
@@ -37,8 +39,17 @@ process run_experiment {
     """
     #!/usr/bin/env -S julia --project=@.
 
+    min_round = ${arg.job_model == "Unid" ? 5 : 3} 
+    max_round = min_round + ${dryRun ? 0 : 5}
+
     include(pwd() * "/bench_variance.jl")
-    result = run_experiments(; seeds = ${arg.seed}:${arg.seed}, rounds = ${dryRun ? "4:4" : "5:10"}, n_particles = ${dryRun ? "2^10" : "2^14"})
+    result = run_experiments(; 
+                scheme_types = [${arg.job_scheme_types}],
+                models = [${arg.job_model}],
+                seeds = ${arg.job_seed}:${arg.job_seed}, 
+                rounds = min_round:max_round, 
+                n_particles = ${dryRun ? "2" : "2^14"}
+            )
     
     mkdir("csvs")
     CSV.write("csvs/bench_variance.csv", result; quotestrings = true)

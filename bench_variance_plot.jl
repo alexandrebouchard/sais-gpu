@@ -5,9 +5,9 @@ using AlgebraOfGraphics
 using Statistics
 
 function plot_vars(result) 
-    groups = groupby(result, [:type, :backend, :scheme])
+    groups = groupby(result, [:type, :backend, :scheme, :model])
     @show summaries = combine(groups, 
-                    :lognorm => (x -> var(relative_z_hat.(x))) => :variance,
+                    :relnorm => var => :variance,
                     :time => mean => :mean_time,
                     :time => std => :std_time,
                     :T => mean => :mean_T,
@@ -20,6 +20,7 @@ function plot_vars(result)
             :variance => "Relative variance", 
             color = :type,
             row = :backend,
+            col = :model,
         )
 end
 
