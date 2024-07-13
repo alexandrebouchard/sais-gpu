@@ -8,14 +8,15 @@ end
 function run_experiments(; seeds, rounds, n_particles, models = [Unid, SimpleMixture], scheme_types = [SAIS, ZJA])
     
     result = DataFrame(
+        backend=Symbol[],
         model = String[],
+        type = Symbol[],
+        n_rounds = Int[],
         time = Float64[],
         lognorm = Float64[],
         relnorm = Float64[], # hatZ / referenceZ
-        type = Symbol[],
         scheme = String[], # we need string otherwise does not get quoted properly
         T = Int[],
-        backend=Symbol[]
     )
     collected_seeds = collect(seeds)
     if !(0 ∈ collected_seeds) 
@@ -35,6 +36,7 @@ function run_experiments(; seeds, rounds, n_particles, models = [Unid, SimpleMix
                 @show scheme_type
                 for n_rounds in rounds
                     for seed in collected_seeds
+                        @show seed
                         s = scheme(scheme_type, n_rounds, model_approx_gcb)
                         a = ais(target, s; 
                             seed, 
@@ -47,8 +49,10 @@ function run_experiments(; seeds, rounds, n_particles, models = [Unid, SimpleMix
                         relnorm = exp(lognorm - approx_log_Z)
                         scheme_symbol = string(s)
                         if seed > 0 # skip first: compile time..
+                            @show time 
                             push!(result, 
                                 (; 
+                                    n_rounds,
                                     model = string(model_type),
                                     time, 
                                     lognorm,
@@ -59,12 +63,14 @@ function run_experiments(; seeds, rounds, n_particles, models = [Unid, SimpleMix
                                     backend = backend_label(backend),
                                 )
                             )
+                        else
+                            println("Skipped: $time")
                         end
                     end
                 end
             end
         end
     end
-
+    sort!(result)
     return result
 end

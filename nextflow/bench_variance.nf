@@ -11,9 +11,9 @@ def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,b
 def deliv = deliverables(workflow)
 
 def variables = [
-    job_seed: (1..100),
+    job_seed: (1..1000),
     job_model: ["Unid", "SimpleMixture"],
-    job_scheme_types: ["SAIS", "ZJA", "FixedSchedule"],
+    job_scheme_types: ["SAIS", "ZJA"],
 ]
 
 workflow  {
@@ -26,6 +26,7 @@ process run_experiment {
     debug false
     time 40.min
     memory = 16.GB
+    errorStrategy 'ignore'
     scratch true 
     clusterOptions '--nodes 1', '--account st-alexbou-1-gpu', '--gpus 1'
     input:
@@ -73,7 +74,11 @@ process plot {
     #!/usr/bin/env -S julia --project=@.
 
     include(pwd() * "/bench_variance_plot.jl")
-    fg = create_fig("aggregated/bench_variance.csv")
+    result = DataFrame(CSV.File("aggregated/bench_variance.csv"))
+
+    fg = create_vars_fig(result)
     save("bench_variance.png", fg)
+
+    
     """
 }
