@@ -6,10 +6,12 @@ using Statistics
 
 ## Variances/time fig
 
+
+
 function plot_speedup(result) 
     groups = groupby(result, [:backend, :model, :type, :N, :elt_type])
     summaries = combine(groups, 
-                    :time => mean => :mean_time,
+                    :time => mean => :timing,
                 )
     normalized = copy(summaries)
     for row in eachrow(normalized)
@@ -20,9 +22,10 @@ function plot_speedup(result)
             :type => ByRow(==(row[:type])),
             :N => ByRow(==(row[:N])),
             :elt_type => ByRow(==(row[:elt_type])))
-        normalization = selected[1, :mean_time]
+        @assert nrow(selected) == 1
+        cpu_timing = selected[1, :timing]
         # normalize by that
-        row[:mean_time] = row[:mean_time]/normalization
+        row[:timing] = cpu_timing/row[:timing]
     end
     normalized = subset(normalized, :backend => ByRow(==("GPU")))
     sort!(normalized)
@@ -31,7 +34,7 @@ function plot_speedup(result)
         (visual(Lines) + visual(Scatter)) *
         mapping(
             :N => "Number of particles", 
-            :mean_time => "Speed-up", 
+            :timing => "Speed-up", 
             color = :type,
             col = :model,
             row = :elt_type
@@ -45,4 +48,5 @@ function create_speedup_fig(result)
     return fg
 end
 
-result = DataFrame(CSV.File("nextflow/deliverables/bench_speedup_2024-07-12T17:05:01.785723-07:00/bench_speedup.csv"))
+# result = DataFrame(CSV.File("nextflow/deliverables/bench_speedup_2024-07-13T07:22:30.134276-07:00/aggregated/bench_speedup.csv"))
+# create_speedup_fig(result) 

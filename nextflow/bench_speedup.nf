@@ -11,7 +11,7 @@ def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,b
 def deliv = deliverables(workflow)
 
 def variables = [
-    job_seed: (1..1),
+    job_seed: (1..10),
     job_model: ["Unid", "SimpleMixture"],
     job_scheme_types: ["SAIS", "ZJA"],
     job_elt_type: ["Float64", "Float32"],
@@ -26,7 +26,8 @@ workflow  {
 process run_experiment {
     debug false
     scratch true
-    time 5.min
+    time 400.min
+    errorStrategy 'ignore'
     memory = 16.GB
     clusterOptions '--nodes 1', '--account st-alexbou-1-gpu', '--gpus 1'
     input:

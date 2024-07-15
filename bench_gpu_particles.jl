@@ -20,7 +20,7 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type)
         println("Warm up: $(a.full_timing.time)") 
 
         # actual
-        for N in map(i -> 2^i, backend isa CPU ? (0:10) : (0:15))
+        for N in map(i -> 2^i, (0:21))
             a = ais(target, s; seed, N, backend, elt_type, show_report = false)
             push!(result, (; 
                 N, 
@@ -35,7 +35,7 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type)
     return result
 end
 
-run_bench(n_rounds = 5, seed = 1, model_type = SimpleMixture, scheme_type = SAIS, elt_type = Float64)
+#run_bench(n_rounds = 5, seed = 1, model_type = SimpleMixture, scheme_type = SAIS, elt_type = Float64)
 
 # plot(result) =
 #     data(result) * 
