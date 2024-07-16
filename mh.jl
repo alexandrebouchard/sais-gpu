@@ -1,7 +1,9 @@
 @kwdef struct RWMH
     n_passes::Int = 1
-    sd_exponents::UnitRange{Int64} = (-1:1)
+    sd_exponents::UnitRange{Int} = (-1:1)
 end
+
+buffer_size(::RWMH, path) = dimensionality(path)
 
 explore!(rng, 
             explorer::RWMH, 

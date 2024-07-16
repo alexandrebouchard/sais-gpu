@@ -54,7 +54,7 @@ function ais(
         KernelAbstractions.synchronize(backend)
 
         schedule = Float64[0]
-        buffers = KernelAbstractions.zeros(backend, E, D, N) 
+        buffers = KernelAbstractions.zeros(backend, E, buffer_size(explorer, path), N) 
         log_weights = KernelAbstractions.zeros(backend, E, N)
         log_ratios =  KernelAbstractions.zeros(backend, E, N)
 
