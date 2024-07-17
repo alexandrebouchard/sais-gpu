@@ -1,5 +1,7 @@
 include("test_setup.jl")
 
+include("test_read_data.jl")
+include("test_logistic.jl")
 include("test_zja.jl")
 include("test_split.jl")
 include("test_large_t.jl")

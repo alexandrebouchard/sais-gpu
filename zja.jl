@@ -38,8 +38,8 @@ function ais(
         N::Int = backend isa CPU ? 2^10 : 2^14, 
         seed = 1,
         multi_threaded = true,
-        explorer = RWMH(), 
-        elt_type::Type{E} = Float32, 
+        explorer = default_explorer(path), 
+        elt_type::Type{E} = Float64, 
         show_report::Bool = true
         ) where {E}
 

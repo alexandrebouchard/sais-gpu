@@ -31,8 +31,8 @@ function ais(
         seed = 1,
         multi_threaded = true,
         compute_barriers = false, 
-        explorer = RWMH(), 
-        elt_type::Type{E} = Float32,
+        explorer = default_explorer(path), 
+        elt_type::Type{E} = Float64,
         show_report::Bool = true
         ) where {E}
 
@@ -52,7 +52,7 @@ function ais(
         # parallel propagation 
         converted_schedule = Array{E}(schedule)
         betas = copy_to_device(converted_schedule, backend)
-        buffers = KernelAbstractions.zeros(backend, E, D, N) 
+        buffers = KernelAbstractions.zeros(backend, E, buffer_size(explorer, path), N) 
         log_weights = KernelAbstractions.zeros(backend, E, N)
         log_increments = compute_barriers ? KernelAbstractions.zeros(backend, E, T, N) : nothing 
         propagate_and_weigh! = propagate_and_weigh_(backend, cpu_args(multi_threaded, N, backend)...)

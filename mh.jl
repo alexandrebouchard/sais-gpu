@@ -5,6 +5,8 @@ end
 
 buffer_size(::RWMH, path) = dimensionality(path)
 
+default_explorer(path) = RWMH()
+
 explore!(rng, 
             explorer::RWMH, 
             path, 
