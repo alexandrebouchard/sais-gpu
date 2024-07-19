@@ -1,0 +1,15 @@
+#!/bin/bash
+
+last_exec_name=$(./nextflow log | tail -n 1 | awk -F '\t' '{print $3}')
+
+if [ -z "$1" ]; then 
+    echo "  One argument: regex pattern to select a process from last nextflow execution. "
+    echo "  The first matching will have its directory passed to 'open'" 
+    echo "  The following processes are available:"
+    ./nextflow log $last_exec_name -f name,workdir,status | sed 's/ [(]/_/' | sed 's/[)]//' | sort
+    exit 1
+fi
+pattern=$1
+
+path=$(./nextflow log $last_exec_name -f name,workdir | sed 's/ [(]/_/' | sed 's/[)]//' | sort | grep $pattern | head -n 1 | awk -F '\t' '{print $2}')
+open $path
