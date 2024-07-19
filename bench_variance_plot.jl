@@ -27,7 +27,7 @@ function plot_vars(result)
     sort!(summaries)
     @show summaries
     data(summaries) * 
-        (visual(Lines) + visual(Scatter)) *
+        (visual(Lines) * mapping(linestyle = :type) + visual(Scatter) * mapping(marker = :type)) *
         mapping(
             :mean_time => "Mean time (s)", 
             :variance => "Relative variance", 
