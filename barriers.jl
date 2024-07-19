@@ -14,7 +14,7 @@ intensity(log_increments::AbstractArray{Float32}, backend) =
     # too imprecise (detected in test_large_t.jl)
     intensity(copy_to_device(log_increments, backend, Float64))
 
-
+# In the paper's notation, computes log_g_exponent - log_g_0
 function compute_log_g(log_weights, log_increments, exponent::Int) 
     T, _ = size(log_increments) 
     
