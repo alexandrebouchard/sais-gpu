@@ -1,5 +1,8 @@
 using Pigeons
 using StatsFuns 
+using Adapt 
+using KernelAbstractions
+include("utils.jl")
 
 struct SimpleMixture{T} 
     data::T
