@@ -1,6 +1,8 @@
 include("bench_variance_utils.jl")
+using CairoMakie
+using AlgebraOfGraphics
 
-function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type)
+function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type, max_particle_exponent = 21)
     result = DataFrame(
                 N=Int[], 
                 time=Float64[], 
@@ -11,6 +13,7 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type)
                 )
 
     for backend in backends()
+        @show backend
         target = build_target(backend, model_type)
         model_approx_gcb = approx_gcb(target)
         s = scheme(scheme_type, n_rounds, model_approx_gcb)
@@ -20,7 +23,8 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type)
         println("Warm up: $(a.full_timing.time)") 
 
         # actual
-        for N in map(i -> 2^i, (0:21))
+        for N in map(i -> 2^i, (0:max_particle_exponent))
+            @show N
             a = ais(target, s; seed, N, backend, elt_type, show_report = false)
             push!(result, (; 
                 N, 
@@ -35,20 +39,18 @@ function run_bench(; n_rounds, seed, model_type, scheme_type, elt_type)
     return result
 end
 
-#run_bench(n_rounds = 5, seed = 1, model_type = SimpleMixture, scheme_type = SAIS, elt_type = Float64)
+plot_gpu_particles(result) =
+    data(result) * 
+        visual(Lines) *
+        mapping(
+            :N => "Number of particles", 
+            :time => "Wallclock time (s)", 
+            color = :backend) 
 
-# plot(result) =
-#     data(result) * 
-#         visual(Lines) *
-#         mapping(
-#             :N => "Number of particles", 
-#             :time => "Wallclock time (s)", 
-#             linestyle = :compute_barriers,
-#             color = :backend) 
+function plot_gpu_particles(result, to_file) 
+    p = plot_gpu_particles(result) 
+    axis = (width = 225, height = 225, xscale = log2, yscale = log2)
+    fg = draw(p; axis)
+    save(to_file, fg)
+end
 
-
-# results = run_bench()
-# p = plot(results)
-# axis = (width = 225, height = 225, xscale = log2, yscale = log2)
-# fg = draw(p; axis)
-# save("bench_gpu_particles.png", fg)
