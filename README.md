@@ -1,90 +1,92 @@
-## Interactive GPU prototyping on Sockeye
-
-
-### Setup SSH
-
-1. Setup a password manager to avoid having to type your CWL password every time
-2. Make sure Sockeye connection sharing is setup. See [relevant section of Sockeye doc](https://confluence.it.ubc.ca/display/UARC/SSH+Connection+Sharing). The key info is that you should have the following in your laptop's `~/.ssh/config` file (`~` mean home directory):
-```
-Host s
-    HostName sockeye.arc.ubc.ca
-    User mycwl
-    ControlMaster auto
-    ControlPath ~/.ssh/ssh_mux_%h_%p_%r
-```
-3. Open the UBC VPN and a terminal window and login with `ssh s`, do the 2-factor auth. 
-4. Put that terminal aside and don't touch it. As long as it is open, other terminals can be opened without the 2 step auth (required for VS Code remote to work).
-
-
-### Setup remote VS Code
-
-1. Open VS Code and click on the lower right icon `><` to start a remote VS Code running on Sockeye. 
-2. For the hostname, just type `s`
-3. Once you are in, use the terminal in VS Code, open it with apple/control with "`"
-
-
-### Basic Sockeye setup
-
-1. Create the directory `/scratch/st-alexbou-1/[your username]`
-2. Download julia and install in your home dir, e.g. in `/home/[your username]/bin/julia-1.xx.x`
-3. Edit `~/.bash_profile` to add:
-```
-export PATH=$PATH:/home/[your username]/bin/julia-1.10.2/bin
-
-export JULIA_PKG_DEVDIR=/scratch/st-alexbou-1/[your username]/
-export JULIA_DEPOT_PATH=/scratch/st-alexbou-1/[your username]/depot
-```
-4. Test julia with `julia` then you will need this single package globally `] add Revise` (others are better to install in a project specific manner) then `exit()`
-5. Edit `~/.bashrc` to add
-```
-alias j='julia --banner=no --load /home/[your username]/julia-start.jl --project=@. ' 
-alias interact='salloc --time=3:00:00 --mem=16G --nodes=1 --ntasks=2 --account=st-alexbou-1'
-alias ginteract='salloc --account=st-alexbou-1-gpu --partition=interactive_gpu --time=1:0:0 -N 1 -n 2 --mem=8G --gpus=1'
-```
-6. Create `~/julia-start.jl`
-```
-println("Active project: $(Base.active_project())")
-println("Loading Revise...")
-using Revise
-```
-
-
-### Setup this repo
-
-1. Clone this repo, i.e. `cd /scratch/st-alexbou-1/[your username]`, `git clone https://github.com/alexandrebouchard/gpufun.git`, cd in it. 
-2. Open two terminals in VS code:
-    - One will be in the head node. Use for anything that needs network access (package install in particular). Open julia with `j`
-    - One will be a GPU node that does not have internet access. In that terminal, type `ginteract` to start the GPU node, then `j`.
-3. In the head node terminal, setup the Julia dependencies with `] instantiate`
-
-
-### Test your setup
-
-In the GPU node's julia: `include("test.jl")`
-
-
-
-### Trouble shooting
-
-The fact the CUDA node do not have internet access can create challenge, sometimes leading to 
-the error message "CUDA could not find an appropiate CUDA runtime...". 
-
-To deal with this:
-
-- in the head node:
+Julia code supporting the preprint:
 
 ```
-using CUDA
-[ignore error message]
-CUDA.set_runtime_version!(v"12.5")
-exit() 
+Optimized Annealed Sequential Monte Carlo Samplers. (2024)
+S. Syed, A. Bouchard-Côté, K Chern, A. Doucet.
+``` 
+
+Code is not yet ready for general use as the manuscript is under review. 
+An open source license will be added once the paper is accepted. 
+Please contact us if you would like to use the software in the meantime. 
+
+
+## Setup
+
+Test with Julia 1.10.2 and CUDA runtime 12.5. 
+
+To setup:
+
+```
+using Pkg
+Pkg.instantiate() 
+``` 
+
+To run a battery of test cases:
+
+```
+include("tests.jl")
 ```
 
-Restart julia and 
+## Usage
+
+### Defining the reference and target (path)
+
+To see an example of how to setup target distributions, see 
+`simple_mixture.jl`. The main idea is that a custom struct is 
+defined to hold the dataset, and dispatches are defined to 
+specify target and reference.
+
+The functions to dispatch are:
+
+- `iid_sample!(...)` to sample from the reference, 
+- `log_reference(...)` to evaluate the log density of the reference, 
+- `log_density_ratio(...)` to evaluate the log of the un-normalized 
+    ratio between target and reference (e.g., in Bayesian models this 
+    is just the likelihood), 
+- `dimensionality(...)` to obtain the dimensionality of the latent space. 
+
+After doing so, create a variable say `path` and assign to it 
+an instance of your custom struct. For example:
 
 ```
-]
-precompile
+include("simple_mixture.jl")
+backend = CPU() # or: CUDABackend()
+path = SimpleMixture(backend) # since it holds data array, it needs to know if will be in CPU or GPU
 ```
 
-After that you should be able to load CUDA from the GPU nodes.
+### Sampling 
+
+The interface for sampling is `ais(...)`. The followoing methods are implemented:
+
+- In `sais.jl`, we implement our SAIS (Sequential Annealed Importance Sampling) algorithm. 
+- In `zha.jl`, we implement Zhou et al (2016).
+
+For example:
+
+```
+include("sais.jl")
+a = ais(path, SAIS(10);
+    N = 100, # number of particles
+    backend,
+    seed = 1)
+```
+
+### Approximating expectation and estimating normalization constant
+
+To approximate expectations:
+
+```
+∫(x -> x.^2, a.particles)
+```
+
+For the normalization constant:
+
+```
+a.particles.log_normalization
+```
+
+For ESS:
+
+```
+ess(a.particles)
+```
