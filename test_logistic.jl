@@ -1,4 +1,5 @@
 include("logistic_regression.jl")
+include("sais.jl")
 
 function _naive_recompute(lr, state)
 

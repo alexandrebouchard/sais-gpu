@@ -74,7 +74,7 @@ function load_and_preprocess_data(;
          if s > 0 
             c .= (c .- mean(c)) ./ s
          else
-            @warn "Trying to standardize data with zero standard deviation" maxlog=1
+            @warn "Trying to standardize a column with zero standard deviation" maxlog=1
          end
       end
    end

@@ -19,7 +19,7 @@ end
 Base.show(io::IO, a::AIS) = print(io, "AIS(backend=$(typeof(a.backend)), T=$(length(a.schedule)), N=$(n_particles(a.particles)), time=$(a.timing.time)s, ess=$(ess(a.particles)), lognorm=$(a.particles.log_normalization))")
 
 struct FixedSchedule 
-    n_points 
+    n_points::Int 
 end
 ais(path, s::FixedSchedule; kwargs...) = ais(path, s.n_points; kwargs...)
 ais(path, T::Int; kwargs...) = ais(path, collect(range(0, 1, length = T)); kwargs...)
