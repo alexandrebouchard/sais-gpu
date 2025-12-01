@@ -2,11 +2,11 @@ include { crossProduct; collectCSVs; deliverables; } from './utils.nf'
 
 params.dryRun = false
 
-def julia_depot_dir = file("/home/alexbou/st-alexbou-1/abc/depot")
+def julia_depot_dir = file("/home/alexbou/burst/abc/depot")
 def toml_files = file("../*.toml")
 
-def experiment_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl,bench_variance.jl".split(",").collect{file("../" + it)}
-def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,bench_variance_plot.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl".split(",").collect{file("../" + it)}
+def experiment_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,logistic_regression.jl,logistic_regression_data.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl,bench_variance.jl".split(",").collect{file("../" + it)}
+def plot_jl = "utils.jl,toy_unid.jl,simple_mixture.jl,SplitRandom.jl,report.jl,logistic_regression.jl,logistic_regression_data.jl,bench_variance_plot.jl,sais.jl,zja.jl,mh.jl,bench_variance_utils.jl,ais.jl,Particles.jl,kernels.jl,barriers.jl".split(",").collect{file("../" + it)}
 
 def deliv = deliverables(workflow)
 
@@ -68,6 +68,7 @@ process plot {
         path aggregated 
     output:
         path "bench_variance.png"
+        path "aggregated/bench_variance.csv"
     publishDir { deliverables(workflow) }, mode: 'copy', overwrite: true
     
     """ 
@@ -76,8 +77,8 @@ process plot {
     include(pwd() * "/bench_variance_plot.jl")
     result = DataFrame(CSV.File("aggregated/bench_variance.csv"))
 
-    fg = create_vars_fig(result)
-    save("bench_variance.png", fg)
+    #fg = create_vars_fig(result)
+    #save("bench_variance.png", fg)
 
     
     """
