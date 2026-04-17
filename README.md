@@ -1,13 +1,10 @@
-Julia code supporting the preprint:
+Julia code supporting the paper:
 
 ```
-Optimized Annealed Sequential Monte Carlo Samplers. (2024)
-S. Syed, A. Bouchard-Côté, K Chern, A. Doucet.
+Saifuddin Syed, Alexandre Bouchard-Côté, Kevin Chern, Arnaud Doucet (2026)
+Journal of Royal Statistical Society, Series B 
 ``` 
 
-Code is not yet ready for general use as the manuscript is under review. 
-An open source license will be added once the paper is accepted. 
-Please contact us if you would like to use the software in the meantime. 
 
 
 ## Setup
